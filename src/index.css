@@ -1,0 +1,25 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-satoshi: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-gelica: "Fraunces", ui-serif, Georgia, serif;
+
+  --color-sky: #0EA5E9;
+  --color-lilac: #DABFFF;
+  --color-plum: #541388;
+  --color-ink: #040404;
+  --color-rose: #D81E5B;
+}
+
+body {
+  background-color: #dbeafe; /* Light blue */
+  color: var(--color-ink);
+  background-image: radial-gradient(#bfdbfe 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.torn-edge {
+  clip-path: polygon(2% 1%, 98% 3%, 100% 98%, 1% 99%);
+}
