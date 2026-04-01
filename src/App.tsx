@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { motion, animate, useMotionValue, useSpring } from 'motion/react';
+import { AnimatePresence, motion, animate, useMotionValue, useSpring } from 'motion/react';
 import { Quote, Mail, Linkedin, FileText } from 'lucide-react';
 
 // ─── Card sound effects (Web Audio API) ───────────────────────────────────────
@@ -45,7 +45,6 @@ const WashiTape = ({ color, className }: { color: string, className?: string }) 
 // NEW: ManilaFolder for Projects
 const ManilaFolder = ({ title, subtitle, className, rotation, zIndex, delay, setCursorText, folderColor = "bg-[#f4e4c4]", tabColor = "bg-[#e8d5b5]" }: any) => (
   <motion.div
-    drag
     whileHover={{ scale: 1.15, zIndex: 50, transition: { duration: 0.2, delay: 0 } }}
     initial={{ opacity: 0, y: 30, scale: 0.95, rotate: rotation - 5 }}
     animate={{ opacity: 1, y: 0, scale: 1, rotate: rotation }}
@@ -73,7 +72,6 @@ const ManilaFolder = ({ title, subtitle, className, rotation, zIndex, delay, set
 // NEW: Sketchbook Page for Process/Workspace
 const SketchbookPage = ({ src, caption, className, rotation, zIndex, delay, setCursorText }: any) => (
   <motion.div
-    drag
     whileHover={{ scale: 1.08, zIndex: 50, transition: { duration: 0.2, delay: 0 } }}
     initial={{ opacity: 0, y: 30, scale: 0.95, rotate: rotation - 5 }}
     animate={{ opacity: 1, y: 0, scale: 1, rotate: rotation }}
@@ -114,10 +112,9 @@ const PaperClip = () => (
 
 
 // Flip Card – replaces IDCard
-const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact = false, onOpenAbout }: any) => {
+const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact = false, onOpenAbout, constraintsRef }: any) => {
   return (
     <motion.div
-      drag
       initial={{ opacity: 0, y: 30, scale: 0.95, rotate: rotation - 5 }}
       animate={{ opacity: 1, y: 0, scale: 1, rotate: rotation }}
       whileHover={{ scale: 1.04, y: -4, transition: { duration: 0.25, ease: 'easeOut' } }}
@@ -168,15 +165,12 @@ const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact =
 
 const StickyNote = ({ text, className, rotation, zIndex, delay, setCursorText }: any) => (
   <motion.div
-    drag
     whileHover={{ scale: 1.08, zIndex: 50, transition: { duration: 0.2, delay: 0 } }}
     initial={{ opacity: 0, y: 30, scale: 0.95, rotate: rotation - 5 }}
     animate={{ opacity: 1, y: 0, scale: 1, rotate: rotation }}
     transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
-    className={`absolute p-4 shadow-sm border border-black/5 cursor-pointer w-40 h-40 flex flex-col justify-center items-center text-center ${className}`}
+    className={`absolute p-4 shadow-sm border border-black/5 w-40 h-40 flex flex-col justify-center items-center text-center ${className}`}
     style={{ zIndex }}
-    onMouseEnter={() => setCursorText('Drag')}
-    onMouseLeave={() => setCursorText('')}
   >
     <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent pointer-events-none" />
     <p className="font-satoshi font-medium text-sm leading-relaxed pointer-events-none relative z-10 text-ink/80 select-none">{text}</p>
@@ -185,15 +179,12 @@ const StickyNote = ({ text, className, rotation, zIndex, delay, setCursorText }:
 
 const PaperScrap = ({ text, className, rotation, zIndex, delay, setCursorText }: any) => (
   <motion.div
-    drag
     whileHover={{ scale: 1.08, zIndex: 50, transition: { duration: 0.2, delay: 0 } }}
     initial={{ opacity: 0, y: 30, scale: 0.95, rotate: rotation - 5 }}
     animate={{ opacity: 1, y: 0, scale: 1, rotate: rotation }}
     transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
-    className={`absolute p-4 bg-[#faf9f5] shadow-sm border border-stone-200 cursor-pointer w-48 ${className}`}
+    className={`absolute p-4 bg-[#faf9f5] shadow-sm border border-stone-200 w-48 ${className}`}
     style={{ zIndex, borderRadius: '2px 8px 3px 4px' }}
-    onMouseEnter={() => setCursorText('Drag')}
-    onMouseLeave={() => setCursorText('')}
   >
     <WashiTape color="bg-sky" className="-top-2 -right-2 rotate-6 w-10 h-4 opacity-50" />
     <Quote size={14} className="text-rose/40 mb-2 pointer-events-none" />
@@ -201,94 +192,126 @@ const PaperScrap = ({ text, className, rotation, zIndex, delay, setCursorText }:
   </motion.div>
 );
 
-const ReviewCardContent = ({ quote, author, role, photoSrc, bgColor = "#fdfbf7", photoRotate = "-4deg", compact = false }: any) => (
-  <div
-    className={`${compact ? 'w-56' : 'w-72'} flex flex-col shadow-md pointer-events-none select-none border border-black/5 relative`}
-    style={{ background: bgColor }}
-  >
-    {/* Plain washi tape — decoration only */}
+const REVIEW_TAPE_STYLE = {
+  background: 'rgba(218,191,255,0.82)',
+};
+
+const ReviewCardFace = ({
+  review,
+  compact = false,
+  isTop = false,
+  isHovered = false,
+}: {
+  review: any;
+  compact?: boolean;
+  isTop?: boolean;
+  isHovered?: boolean;
+}) => (
+  <div className={`${compact ? 'w-56' : 'w-[250px]'} bg-[#fdfcfa] border border-black/7 shadow-[0_8px_20px_rgba(0,0,0,0.09)] relative pointer-events-none select-none`}>
     <div
-      className="absolute -top-2 left-5 w-20 h-5 bg-lilac/55 z-10 shadow-sm"
-      style={{ mixBlendMode: 'multiply', transform: 'rotate(-1.5deg)' }}
+      className={`absolute -top-2 left-1/2 -translate-x-1/2 ${compact ? 'w-16 h-4' : 'w-[68px] h-4'} rounded-[2px] shadow-sm z-10`}
+      style={{
+        ...REVIEW_TAPE_STYLE,
+        transform: `translateX(-50%) rotate(${isTop && isHovered ? '0deg' : review.tapeRotate})`,
+        opacity: 0.88,
+      }}
     />
 
-    <div className={`flex flex-col ${compact ? 'gap-2.5 p-3 pt-5' : 'gap-3.5 p-5 pt-6'}`}>
-      {/* REVIEWS label inside the card */}
-      <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-ink/35">Reviews</span>
+    <div className={`${compact ? 'p-3 pt-5 gap-3' : 'p-[18px] pt-6 gap-[14px]'} flex flex-col`}>
+      <span className="font-mono text-[6.5px] uppercase tracking-[0.22em] text-ink/28">REVIEW</span>
 
-      {/* Quote */}
       <p
-        className={`font-satoshi ${compact ? 'text-[12px]' : 'text-[14px]'} text-ink/70 leading-relaxed`}
-        style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}
+        className={`${compact ? 'text-[11px]' : 'text-[11.5px]'} font-satoshi italic text-ink/70 leading-[1.68]`}
+        style={{ display: '-webkit-box', WebkitLineClamp: compact ? 3 : 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}
       >
-        "{quote}"
+        "{review.quote}"
       </p>
 
-      {/* Divider */}
-      <div className="w-full h-px bg-black/8" />
+      <div className="h-px bg-black/8" />
 
-      {/* Author row with color photo */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         <div
-          className={`bg-white ${compact ? 'p-1 pb-3.5' : 'p-1.5 pb-6'} shadow-sm border border-black/5 shrink-0`}
-          style={{ transform: `rotate(${photoRotate})` }}
+          className={`bg-white ${compact ? 'p-[3px] pb-[9px]' : 'p-[3px] pb-[10px]'} shadow-[0_2px_6px_rgba(0,0,0,0.12)] border border-black/6 shrink-0`}
+          style={{ transform: `rotate(${review.photoRotate})` }}
         >
           <img
-            src={photoSrc}
-            alt={author}
-            className={`${compact ? 'w-10 h-10' : 'w-14 h-14'} object-cover opacity-95`}
+            src={review.photoSrc}
+            alt={review.author}
+            className={`${compact ? 'w-8 h-8' : 'w-9 h-9'} object-cover block`}
             draggable={false}
             referrerPolicy="no-referrer"
           />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className={`font-satoshi font-bold ${compact ? 'text-xs' : 'text-sm'} text-plum leading-snug`}>{author}</span>
-          <span className="font-satoshi text-[8px] uppercase tracking-wider text-ink/40">{role}</span>
+          <span className={`${compact ? 'text-[11px]' : 'text-[11.5px]'} font-satoshi font-bold text-plum leading-tight`}>
+            {review.author}
+          </span>
+          <span className="font-satoshi text-[8.5px] text-ink/45 leading-tight">{review.role}</span>
         </div>
       </div>
+
+      {isTop && (
+        <div className={`font-mono text-[6.5px] uppercase tracking-[0.14em] text-plum/45 transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+          click to cycle →
+        </div>
+      )}
     </div>
   </div>
 );
 
 const reviews = [
   {
-    quote: "A brilliant problem solver. The user experience was elevated beyond our expectations.",
-    author: "Sarah Jenkins",
-    role: "VP of Product, FinServe",
-    photoSrc: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop",
-    bgColor: "#fdfbf7",
+    quote: "I had the pleasure of mentoring Mowa, a talented and thoughtful product designer with a strong mix of product thinking and craft. She's incredibly proactive, dedicated, and always applying feedback quickly while continuously refining her work...",
+    author: "Arielle Ferreira",
+    role: "JobGet",
+    photoSrc: "/about/arielle.jpeg",
     photoRotate: "5deg",
-    restRotate: -3,
-    restX: -5,
-    restY: 8,
+    tapeRotate: "-2deg",
   },
   {
-    quote: "Incredible attention to detail and a fantastic collaborative spirit throughout the project.",
-    author: "Marcus Chen",
-    role: "Founder, StartupX",
-    photoSrc: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop",
-    bgColor: "#faf9f5",
-    photoRotate: "-6deg",
-    restRotate: 1,
-    restX: 3,
-    restY: 3,
-  },
-  {
-    quote: "An exceptional product designer who blends aesthetics with functionality beautifully.",
-    author: "Elena Rodriguez",
-    role: "Product Lead, Build Africa AI",
-    photoSrc: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop",
-    bgColor: "#ffffff",
+    quote: "I had the pleasure of working with Mowa on several major projects, including Build Core, Build Africa Store, and Build Africa AI. Her design skills are exceptional — she consistently delivers clean, user-focused solutions. Reliable, collaborative, and truly every team's dream colleague...",
+    author: "Hassan Oladipupo",
+    role: "Backend Engineer, Build Africa",
+    photoSrc: "/about/hassan.png",
     photoRotate: "-3deg",
-    restRotate: 0,
-    restX: 0,
-    restY: 0,
+    tapeRotate: "-1.5deg",
+  },
+  {
+    quote: "Working with Mowa was a seamless experience — she brings both creative instinct and sharp product thinking to every problem. Her ability to translate complex requirements into elegant, intuitive designs is rare...",
+    author: "Tolu Okunjoyo",
+    role: "Qudra",
+    photoSrc: "/about/tolu.jpeg",
+    photoRotate: "-6deg",
+    tapeRotate: "2deg",
   },
 ];
 
-const ReviewStack = ({ delay, setCursorText, className, compact = false }: any) => {
-  const [flipped, setFlipped] = useState<boolean[]>(reviews.map(() => false));
-  const draggedRef = React.useRef(false);
+const ReviewStack = ({ delay, setCursorText, className, compact = false, constraintsRef }: any) => {
+  const [order, setOrder] = useState([0, 1, 2]);
+  const [hovered, setHovered] = useState(false);
+  const [exitingIndex, setExitingIndex] = useState<number | null>(null);
+
+  const layout = compact
+    ? [
+        { rotate: 5, x: 10, y: 10, scale: 0.92, hoverRotate: 7, hoverX: 18, hoverY: 12, hoverScale: 0.92 },
+        { rotate: -3, x: -5, y: 4, scale: 0.965, hoverRotate: -7, hoverX: -15, hoverY: 8, hoverScale: 0.965 },
+        { rotate: 0, x: 0, y: 0, scale: 1, hoverRotate: 1, hoverX: 0, hoverY: -14, hoverScale: 1.06 },
+      ]
+    : [
+        { rotate: 4.5, x: 8, y: 10, scale: 0.91, hoverRotate: 8, hoverX: 16, hoverY: 12, hoverScale: 0.91 },
+        { rotate: -2.5, x: -3, y: 4, scale: 0.955, hoverRotate: -6, hoverX: -12, hoverY: 8, hoverScale: 0.955 },
+        { rotate: 0, x: 0, y: 0, scale: 1, hoverRotate: 1, hoverX: 0, hoverY: -16, hoverScale: 1.08 },
+      ];
+
+  const cycleReviews = () => {
+    if (exitingIndex !== null) return;
+    playSound('review');
+    setExitingIndex(order[2]);
+    window.setTimeout(() => {
+      setOrder(([bottom, middle, top]) => [top, bottom, middle]);
+      setExitingIndex(null);
+    }, 260);
+  };
 
   return (
     <motion.div
@@ -296,66 +319,84 @@ const ReviewStack = ({ delay, setCursorText, className, compact = false }: any) 
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
       className={`absolute cursor-pointer ${className}`}
-      style={{ zIndex: 12 }}
-      onMouseEnter={() => { setCursorText('Flip'); playSound('soft'); }}
-      onMouseLeave={() => setCursorText('')}
+      style={{ zIndex: 12, width: compact ? 224 : 250, height: compact ? 212 : 230 }}
+      onMouseEnter={() => { setCursorText('Read review'); setHovered(true); playSound('soft'); }}
+      onMouseLeave={() => { setCursorText(''); setHovered(false); }}
+      onClick={cycleReviews}
     >
-      {reviews.map((review, i) => (
-        <motion.div
-          key={i}
-          drag
-          dragMomentum={false}
-          initial={{ rotate: review.restRotate, x: review.restX, y: review.restY }}
-          whileDrag={{ scale: 1.04, zIndex: 50 }}
-          transition={{ type: "spring", stiffness: 250, damping: 22 }}
-          onDragStart={() => { draggedRef.current = true; }}
-          onDragEnd={() => { setTimeout(() => { draggedRef.current = false; }, 60); }}
-          onClick={() => { if (!draggedRef.current) { playSound('review'); setFlipped(prev => prev.map((f, idx) => idx === i ? !f : f)); } }}
-          className="absolute cursor-pointer"
-          style={{ zIndex: i + 10 }}
-        >
-          <div style={{ perspective: '900px', width: compact ? '208px' : '256px' }}>
-            <motion.div
-              animate={{ rotateY: flipped[i] ? 180 : 0 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-              style={{ transformStyle: 'preserve-3d', position: 'relative', width: '100%' }}
-            >
-              {/* Front */}
-              <div style={{ backfaceVisibility: 'hidden' }}>
-                <ReviewCardContent {...review} compact={compact} />
-              </div>
-              {/* Back */}
-              <div
-                className={`${compact ? 'p-3' : 'p-4'} bg-[#f8f4ff] border border-plum/15 shadow-md flex flex-col gap-3 select-none`}
-                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-              >
-                <span className="font-mono text-[8px] uppercase tracking-widest text-plum/40">✦ Review</span>
-                <p className={`font-gelica italic ${compact ? 'text-[10px]' : 'text-[12px]'} text-plum/80 leading-relaxed`}>"{review.quote}"</p>
-                <div className="mt-auto">
-                  <p className="font-satoshi font-semibold text-xs text-plum">{review.author}</p>
-                  <p className="font-mono text-[8px] uppercase tracking-wider text-ink/40">{review.role}</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      ))}
-      <div className={`${compact ? 'w-56 h-48' : 'w-72 h-56'} opacity-0 pointer-events-none`} />
+      {order.slice(0, 2).map((reviewIndex, slot) => {
+        const review = reviews[reviewIndex];
+        const card = layout[slot];
+        return (
+          <motion.div
+            key={`${review.author}-${slot}`}
+            className="absolute top-0 left-0"
+            animate={{
+              rotate: hovered ? card.hoverRotate : card.rotate,
+              x: hovered ? card.hoverX : card.x,
+              y: hovered ? card.hoverY : card.y,
+              scale: hovered ? card.hoverScale : card.scale,
+            }}
+            transition={{ type: "spring", stiffness: 260, damping: 24 }}
+            style={{ zIndex: slot + 1 }}
+          >
+            <ReviewCardFace review={review} compact={compact} />
+          </motion.div>
+        );
+      })}
+
+      <AnimatePresence mode="wait">
+        {exitingIndex === null ? (
+          <motion.div
+            key={`top-${order[2]}`}
+            className="absolute top-0 left-0"
+            initial={{ y: -22, rotate: 2, opacity: 0, scale: 0.98 }}
+            animate={{
+              y: hovered ? layout[2].hoverY : layout[2].y,
+              x: hovered ? layout[2].hoverX : layout[2].x,
+              rotate: hovered ? layout[2].hoverRotate : layout[2].rotate,
+              scale: hovered ? layout[2].hoverScale : layout[2].scale,
+              opacity: 1,
+            }}
+            exit={{ y: -52, x: 34, rotate: 11, opacity: 0, scale: 1.04 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            style={{ zIndex: 6 }}
+          >
+            <ReviewCardFace review={reviews[order[2]]} compact={compact} isTop isHovered={hovered} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key={`exiting-${exitingIndex}`}
+            className="absolute top-0 left-0"
+            initial={{
+              y: hovered ? layout[2].hoverY : layout[2].y,
+              x: hovered ? layout[2].hoverX : layout[2].x,
+              rotate: hovered ? layout[2].hoverRotate : layout[2].rotate,
+              scale: hovered ? layout[2].hoverScale : layout[2].scale,
+              opacity: 1,
+            }}
+            animate={{ y: -52, x: 34, rotate: 11, opacity: 0, scale: 1.04 }}
+            transition={{ duration: 0.24, ease: [0.34, 1.56, 0.64, 1] }}
+            style={{ zIndex: 7 }}
+          >
+            <ReviewCardFace review={reviews[exitingIndex]} compact={compact} isTop isHovered={hovered} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className={`${compact ? 'w-56 h-52' : 'w-[250px] h-[230px]'} opacity-0 pointer-events-none`} />
     </motion.div>
   );
 };
 
 const PhotoStrip = ({ delay, className, setCursorText }: any) => (
   <motion.div
-    drag
     whileHover={{ scale: 1.08, zIndex: 50, transition: { duration: 0.2, delay: 0 } }}
     initial={{ opacity: 0, y: 40, rotate: -2 }}
     animate={{ opacity: 1, y: 0, rotate: 2 }}
     transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
-    className={`absolute bg-white p-2 shadow-sm border border-gray-100 cursor-pointer flex flex-col gap-2 ${className}`}
+    className={`absolute bg-white p-2 shadow-sm border border-gray-100 flex flex-col gap-2 ${className}`}
     style={{ zIndex: 8 }}
-    onMouseEnter={() => setCursorText('Drag')}
-    onMouseLeave={() => setCursorText('')}
   >
     <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=200&auto=format&fit=crop" className="w-16 h-16 object-cover pointer-events-none grayscale contrast-100 opacity-90" draggable={false} alt="Texture 1" referrerPolicy="no-referrer" />
     <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop" className="w-16 h-16 object-cover pointer-events-none grayscale contrast-100 opacity-90" draggable={false} alt="Texture 2" referrerPolicy="no-referrer" />
@@ -365,15 +406,12 @@ const PhotoStrip = ({ delay, className, setCursorText }: any) => (
 
 const EmojiScrap = ({ emoji, className, rotation, zIndex, delay, setCursorText, size = "text-4xl" }: any) => (
   <motion.div
-    drag
     whileHover={{ scale: 1.2, rotate: rotation + 10, zIndex: 50, transition: { duration: 0.2, delay: 0 } }}
     initial={{ opacity: 0, y: 20, scale: 0.5, rotate: rotation - 20 }}
     animate={{ opacity: 1, y: 0, scale: 1, rotate: rotation }}
     transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 15 }}
-    className={`absolute cursor-pointer ${size} ${className}`}
+    className={`absolute ${size} ${className}`}
     style={{ zIndex }}
-    onMouseEnter={() => setCursorText('Drag')}
-    onMouseLeave={() => setCursorText('')}
   >
     <span className="pointer-events-none drop-shadow-sm select-none">{emoji}</span>
   </motion.div>
@@ -540,12 +578,11 @@ const FolderContent = ({ title, subtitle, folderColor, tabColor, image, compact 
   </>
 );
 
-const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpenProjects }: any) => {
+const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpenProjects, constraintsRef }: any) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <motion.div
-      drag
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
@@ -619,9 +656,8 @@ const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpen
   );
 };
 
-const ContactEnvelope = ({ delay, setCursorText, className, rotation = 0, zIndex = 10, compact = false }: any) => (
+const ContactEnvelope = ({ delay, setCursorText, className, rotation = 0, zIndex = 10, compact = false, constraintsRef }: any) => (
   <motion.div
-    drag
     initial={{ opacity: 0, scale: 0.9, rotate: rotation - 10 }}
     animate={{ opacity: 1, scale: 1, rotate: rotation }}
     transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
@@ -802,106 +838,325 @@ const ScribbleAnnotations = ({ show, compact = false }: { show: boolean; compact
 // ─────────────────────────────────────────────────────────────────────────────
 // ABOUT PAGE — full-screen about me overlay
 // ─────────────────────────────────────────────────────────────────────────────
-const AboutPage = ({ onClose }: { onClose: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 40 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 40 }}
-    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-    className="fixed inset-0 z-[500] overflow-y-auto bg-[#fefcfa]"
-  >
-    <button
-      onClick={onClose}
-      className="fixed top-6 left-[90px] z-[600] flex items-center gap-2 bg-white border border-black/10 shadow-sm rounded-full px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-ink/60 hover:text-ink hover:border-ink/30 transition-all duration-200 cursor-pointer"
-    >
-      ← Back
-    </button>
 
-    <div className="max-w-3xl mx-auto px-8 pt-24 pb-32">
-      {/* Header section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.6 }}
-        className="flex flex-col md:flex-row gap-12 items-start mb-16"
+// Tool logo SVGs — simplified brand marks
+const FigmaLogo = () => (
+  <svg viewBox="0 0 30 45" width="22" height="33" aria-hidden="true">
+    <rect x="0" y="0" width="15" height="15" rx="7.5" fill="#F24E1E"/>
+    <rect x="15" y="0" width="15" height="15" rx="7.5" fill="#FF7262"/>
+    <rect x="0" y="15" width="15" height="15" rx="7.5" fill="#A259FF"/>
+    <circle cx="22.5" cy="22.5" r="7.5" fill="#1ABCFE"/>
+    <rect x="0" y="30" width="15" height="15" rx="7.5" fill="#0ACF83"/>
+  </svg>
+);
+
+const FramerLogo = () => (
+  <svg viewBox="0 0 24 36" width="18" height="27" aria-hidden="true">
+    <path d="M0 0L24 0L12 18Z" fill="white"/>
+    <path d="M12 18L24 0L24 36Z" fill="rgba(255,255,255,0.55)"/>
+    <path d="M0 18L12 18L12 36Z" fill="white"/>
+  </svg>
+);
+
+const NotionLogo = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+    <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z" fill="#1A1A1A"/>
+  </svg>
+);
+
+const ChatGPTLogo = () => (
+  <svg viewBox="0 0 41 41" width="22" height="22" aria-hidden="true">
+    <path d="M37.532 16.87a9.963 9.963 0 00-.856-8.184 10.078 10.078 0 00-10.855-4.835 9.964 9.964 0 00-7.505-3.354 10.079 10.079 0 00-9.612 6.977 9.967 9.967 0 00-6.664 4.834 10.08 10.08 0 001.24 11.817 9.965 9.965 0 00.856 8.185 10.079 10.079 0 0010.855 4.835 9.965 9.965 0 007.504 3.354 10.078 10.078 0 009.617-6.981 9.967 9.967 0 006.663-4.834 10.079 10.079 0 00-1.243-11.814zM22.498 37.886a7.474 7.474 0 01-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 00.655-1.134V19.054l3.366 1.944a.12.12 0 01.066.092v9.299a7.505 7.505 0 01-7.49 7.496zM6.392 31.006a7.471 7.471 0 01-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 001.308 0l9.724-5.614v3.888a.12.12 0 01-.048.103l-8.051 4.649a7.504 7.504 0 01-10.24-2.744zM4.297 13.62A7.469 7.469 0 018.2 10.333c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 00.654 1.132l9.723 5.614-3.366 1.944a.12.12 0 01-.114.012L7.044 23.86a7.504 7.504 0 01-2.747-10.24zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 01.114-.012l8.048 4.648a7.498 7.498 0 01-1.158 13.528v-9.476a1.293 1.293 0 00-.647-1.13zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 00-1.308 0l-9.723 5.614v-3.888a.12.12 0 01.048-.103l8.05-4.645a7.497 7.497 0 0111.135 7.763zm-21.063 6.929l-3.367-1.944a.12.12 0 01-.065-.092v-9.299a7.497 7.497 0 0112.293-5.756 6.94 6.94 0 00-.236.134l-7.965 4.6a1.294 1.294 0 00-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.497v4.999l-4.331 2.5-4.331-2.5V18z" fill="white"/>
+  </svg>
+);
+
+const CursorLogo = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+    <path d="M12 0L24 20.785H0L12 0Z" fill="white"/>
+    <path d="M12 5L20.5 19.5H3.5L12 5Z" fill="rgba(0,0,0,0.3)"/>
+  </svg>
+);
+
+const AboutPage = ({ onClose }: { onClose: () => void }) => {
+  const toolStickers = [
+    {
+      name: 'Figma',
+      note: 'where it all starts',
+      bg: '#1E1E1E',
+      border: 'transparent',
+      textColor: '#fff',
+      noteColor: 'rgba(255,255,255,0.45)',
+      rotate: '-2.5deg',
+      logo: <FigmaLogo />,
+    },
+    {
+      name: 'Claude Code',
+      note: 'built this with it',
+      bg: '#541388',
+      border: 'transparent',
+      textColor: '#fff',
+      noteColor: 'rgba(255,255,255,0.5)',
+      rotate: '2deg',
+      logo: (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        </svg>
+      ),
+    },
+    {
+      name: 'Framer',
+      note: 'motion & magic',
+      bg: '#0055FF',
+      border: 'transparent',
+      textColor: '#fff',
+      noteColor: 'rgba(255,255,255,0.5)',
+      rotate: '1.5deg',
+      logo: <FramerLogo />,
+    },
+    {
+      name: 'ChatGPT',
+      note: 'thinking partner',
+      bg: '#10A37F',
+      border: 'transparent',
+      textColor: '#fff',
+      noteColor: 'rgba(255,255,255,0.5)',
+      rotate: '-1deg',
+      logo: <ChatGPTLogo />,
+    },
+    {
+      name: 'Cursor',
+      note: 'tab always open',
+      bg: '#000',
+      border: 'transparent',
+      textColor: '#fff',
+      noteColor: 'rgba(255,255,255,0.4)',
+      rotate: '2deg',
+      logo: <CursorLogo />,
+    },
+    {
+      name: 'Notion',
+      note: 'brain dump central',
+      bg: '#F7F6F3',
+      border: '#E5E4E0',
+      textColor: '#1A1A1A',
+      noteColor: 'rgba(0,0,0,0.35)',
+      rotate: '-1.5deg',
+      logo: <NotionLogo />,
+    },
+    {
+      name: 'FigJam',
+      note: 'workshops & chaos',
+      bg: '#FFD966',
+      border: 'transparent',
+      textColor: '#1A1A1A',
+      noteColor: 'rgba(0,0,0,0.4)',
+      rotate: '1deg',
+      logo: (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="#1A1A1A" strokeWidth="1.8"/>
+          <path d="M8 12h8M12 8v8" stroke="#1A1A1A" strokeWidth="1.8" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 40 }}
+      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="fixed inset-0 z-[500] overflow-y-auto bg-[#fefcfa]"
+    >
+      <button
+        onClick={onClose}
+        className="fixed top-5 left-4 sm:left-[90px] z-[600] flex items-center gap-2 bg-white border border-black/10 shadow-sm rounded-full px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-ink/60 hover:text-ink hover:border-ink/30 transition-all duration-200 cursor-pointer"
       >
-        {/* Polaroid photo */}
-        <div className="flex-shrink-0">
-          <div className="bg-white p-3 pb-10 shadow-md border border-gray-200/60" style={{ transform: 'rotate(-1.5deg)' }}>
-            <img src="/mowa.jpeg" alt="Mowa Otun" className="w-52 h-64 object-cover object-center" draggable={false} />
-            <p className="font-satoshi text-xs text-ink/40 text-center mt-3 italic">That's me ✦</p>
-          </div>
-        </div>
-        {/* Bio */}
-        <div className="flex-1 pt-2">
+        ← Back
+      </button>
+
+      <div className="max-w-6xl mx-auto px-6 sm:px-16 lg:px-28 pt-24 pb-32">
+
+        {/* ── 1. Header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.6 }}
+          className="mb-10"
+        >
           <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-3">About me</p>
-          <h1 className="font-gelica text-4xl md:text-5xl text-ink font-semibold leading-tight mb-2">Mowa Otun</h1>
-          <p className="font-satoshi text-lg text-ink/50 italic mb-6">Product & UX Designer</p>
-          <p className="font-satoshi text-base text-ink leading-relaxed mb-4">
-            I design digital products that feel like they were made for people — because they were. I care deeply about the space between what a product does and how it makes someone feel.
+          <h1 className="font-gelica text-5xl text-ink font-semibold leading-tight mb-2">Mowa Otun</h1>
+          <p className="font-satoshi text-lg text-ink/50 italic">Product & UX Designer · Toronto, Canada</p>
+        </motion.div>
+
+        {/* ── 2. Portrait — "That's me" ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18, duration: 0.6 }}
+          className="mb-12"
+        >
+          <div
+            className="bg-white p-3 pb-10 shadow-lg border border-gray-200/60 inline-block"
+            style={{ transform: 'rotate(-1.5deg)' }}
+          >
+            <img
+              src="/about/mowa-portrait.jpeg"
+              alt="Mowa Otun"
+              className="w-full max-w-[340px] h-[420px] object-cover object-top"
+              draggable={false}
+            />
+            <p className="font-satoshi text-xs text-ink/40 text-center mt-3 italic">that's me ✦</p>
+          </div>
+        </motion.div>
+
+        {/* ── 3. Butterfly opener ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.24, duration: 0.6 }}
+          className="mb-8 bg-white border border-black/6 rounded-2xl p-6 shadow-sm relative overflow-hidden"
+        >
+          <span className="absolute top-4 right-5 text-2xl opacity-20 select-none" aria-hidden="true">🦋</span>
+          <p className="font-gelica text-xl text-ink leading-relaxed mb-4">
+            Okay… you're probably wondering why there are butterflies everywhere. 🦋
+          </p>
+          <p className="font-satoshi text-base text-ink/75 leading-relaxed mb-3">
+            This portfolio is inspired by two things: scrapbooks and butterflies. Scrapbooks, because I like collecting ideas, thoughts, and moments. Butterflies, because they represent transformation, and that's exactly how I approach design. I take complex problems, work through them (sometimes messily), and turn them into simple, thoughtful experiences.
+          </p>
+          <p className="font-satoshi text-base text-ink/75 leading-relaxed">
+            My secret ingredient? Empathy. I design products that are not only functional but also give people <span className="italic">butterflies in their bellies</span>. There, I said it.
+          </p>
+        </motion.div>
+
+        {/* ── 4. Extended bio ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="mb-20 space-y-4"
+        >
+          <p className="font-satoshi text-base text-ink leading-relaxed">
+            I've spent years designing across AI, Healthcare, B2B SaaS, and B2C, building products that actually solve problems instead of just checking boxes. My sweet spot is finding the balance between what users need and what a business needs to thrive. When I'm not deep in Figma, you'll find me out in the world meeting new people and immersing myself in new cultures.
           </p>
           <p className="font-satoshi text-base text-ink leading-relaxed">
-            With experience across health, fintech, and AI, I've learned that the best designs come from listening first and designing second. I'm based in Lagos, working globally.
+            Lately I've been deep into design systems. Not the rigid kind that frustrate teams, but the flexible ones that actually make their lives easier. I care about creating experiences people don't just tolerate, but genuinely <span className="italic">want</span> to use. That means research, iteration, and sometimes throwing out the pretty design because it doesn't actually work.
           </p>
-        </div>
-      </motion.div>
+          <p className="font-satoshi text-base text-ink/60 leading-relaxed italic">
+            Based in Toronto. Always up for connecting with teams building something meaningful.
+          </p>
+        </motion.div>
 
-      {/* Skills */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
-        className="mb-16"
-      >
-        <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-6">What I do</p>
-        <div className="flex flex-wrap gap-3">
-          {['UX Research', 'UI Design', 'Product Strategy', 'Design Systems', 'Interaction Design', 'Prototyping', 'User Testing', 'AI Products'].map((skill, i) => {
-            const c = ['bg-white text-plum border-plum/30', 'bg-white text-rose border-rose/25', 'bg-white text-sky border-sky/30', 'bg-white text-plum/60 border-lilac/40'];
-            return <span key={skill} className={`font-mono text-[10px] uppercase tracking-widest px-4 py-2 border rounded-full ${c[i % c.length]}`}>{skill}</span>;
-          })}
-        </div>
-      </motion.div>
-
-      {/* Tools */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.38, duration: 0.6 }}
-        className="mb-16"
-      >
-        <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-6">Tools I use</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[
-            { name: 'Figma', desc: 'Design & prototyping', dot: '#F24E1E' },
-            { name: 'Claude Code', desc: 'AI-assisted development', dot: '#541388' },
-            { name: 'Adobe XD', desc: 'UX wireframing', dot: '#FF61F6' },
-            { name: 'Photoshop', desc: 'Image editing & retouching', dot: '#31A8FF' },
-            { name: 'Illustrator', desc: 'Vector & brand assets', dot: '#FF9A00' },
-          ].map((tool) => (
-            <div key={tool.name} className="bg-white border border-black/6 rounded-xl p-4 shadow-sm flex items-start gap-3">
-              <span className="mt-1.5 w-2 h-2 rounded-full flex-shrink-0" style={{ background: tool.dot }} />
-              <div>
-                <p className="font-gelica text-sm font-semibold text-ink leading-tight">{tool.name}</p>
-                <p className="font-satoshi text-xs text-ink/45 mt-0.5">{tool.desc}</p>
+        {/* ── 5. Photo strip — no portrait (already shown above) ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.34, duration: 0.6 }}
+          className="mb-20"
+        >
+          <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-6">A peek into my world 💕</p>
+          <div className="flex gap-5 items-end overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
+            {[
+              { src: '/about/matcha.jpeg',    caption: 'matcha lover ☕',                rotate: '-1.5deg' },
+              { src: '/about/kdrama.webp',    caption: 'certified k-drama addict 🎬',    rotate: '2deg'    },
+              { src: '/about/graduation.jpeg',caption: 'women in tech era 🎓',           rotate: '1.5deg'  },
+              { src: '/about/designing.jpeg', caption: 'designing on the go ✏️',         rotate: '-2.5deg' },
+              { src: '/about/nature.jpeg',    caption: 'lover of nature 🌿',             rotate: '1deg'    },
+            ].map((photo, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 bg-white p-3 pb-9 shadow-md border border-gray-200/60"
+                style={{ transform: `rotate(${photo.rotate})` }}
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.caption}
+                  className="w-40 h-48 sm:w-48 sm:h-60 object-cover object-center"
+                  draggable={false}
+                />
+                <p className="font-satoshi text-[10px] text-ink/40 text-center mt-2 italic">{photo.caption}</p>
               </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
-      {/* Connect */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.55, duration: 0.6 }}
-        className="bg-white p-8 rounded-2xl border border-black/6 shadow-sm"
-      >
-        <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-3">Say hello</p>
-        <p className="font-gelica text-2xl text-ink italic mb-6">Open to collaborations & new projects.</p>
-        <div className="flex flex-wrap gap-4">
-          <a href="mailto:hello@mowa.design" className="font-mono text-[10px] uppercase tracking-widest px-5 py-2.5 bg-ink text-white rounded-full hover:bg-plum transition-colors duration-200 cursor-pointer">Email me</a>
-          <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="font-mono text-[10px] uppercase tracking-widest px-5 py-2.5 border border-black/15 text-ink/60 rounded-full hover:text-ink hover:border-ink/30 transition-colors duration-200 cursor-pointer">LinkedIn</a>
-        </div>
-      </motion.div>
-    </div>
-  </motion.div>
-);
+        {/* ── 6. Skills ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.38, duration: 0.6 }}
+          className="mb-20"
+        >
+          <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-5">What I do</p>
+          <div className="flex flex-wrap gap-3">
+            {['UX Research', 'UI Design', 'Product Strategy', 'Design Systems', 'Interaction Design', 'Prototyping', 'User Testing', 'AI Products'].map((skill, i) => {
+              const c = ['bg-white text-plum border-plum/30', 'bg-white text-rose border-rose/25', 'bg-white text-sky border-sky/30', 'bg-white text-plum/60 border-lilac/40'];
+              return <span key={skill} className={`font-mono text-[10px] uppercase tracking-widest px-4 py-2 border rounded-full ${c[i % c.length]}`}>{skill}</span>;
+            })}
+          </div>
+        </motion.div>
+
+        {/* ── 7. Tools — desk stickers ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.44, duration: 0.6 }}
+          className="mb-20"
+        >
+          <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-6">My desk</p>
+          <div className="flex flex-wrap gap-4 items-end">
+            {toolStickers.map((tool) => (
+              <div
+                key={tool.name}
+                className="flex-shrink-0 flex flex-col items-center gap-2 px-4 py-3.5 rounded-2xl shadow-md cursor-default select-none"
+                style={{
+                  background: tool.bg,
+                  border: `1.5px solid ${tool.border}`,
+                  transform: `rotate(${tool.rotate})`,
+                  minWidth: '88px',
+                }}
+              >
+                <div className="flex items-center justify-center w-10 h-10">
+                  {tool.logo}
+                </div>
+                <p className="font-gelica text-[13px] font-semibold leading-tight" style={{ color: tool.textColor }}>{tool.name}</p>
+                <p className="font-satoshi text-[9px] italic leading-tight text-center" style={{ color: tool.noteColor }}>{tool.note}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Connect */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        >
+          {/* Say hello card */}
+          <div className="bg-white p-7 rounded-2xl border border-black/6 shadow-sm flex flex-col justify-between gap-5">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-plum/50 mb-2">Say hello</p>
+              <p className="font-gelica text-xl text-ink italic leading-snug">Open to collaborations & new projects.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a href="mailto:mowaninuoreoluwao@gmail.com" className="font-mono text-[10px] uppercase tracking-widest px-4 py-2 bg-ink text-white rounded-full hover:bg-plum transition-colors duration-200 cursor-pointer">Email me</a>
+              <a href="https://www.linkedin.com/in/mowa-otun" target="_blank" rel="noreferrer" className="font-mono text-[10px] uppercase tracking-widest px-4 py-2 border border-black/15 text-ink/60 rounded-full hover:text-ink hover:border-ink/30 transition-colors duration-200 cursor-pointer">LinkedIn</a>
+              <a href="https://docs.google.com/document/d/1JdjM8DPoPfcUpyfOsIuf_w51LAALdnKuwbvc_pSPJIw/edit?usp=sharing" target="_blank" rel="noreferrer" className="font-mono text-[10px] uppercase tracking-widest px-4 py-2 border border-black/15 text-ink/60 rounded-full hover:text-ink hover:border-ink/30 transition-colors duration-200 cursor-pointer">Resume</a>
+            </div>
+          </div>
+          {/* Book a call card */}
+          <div className="bg-plum p-7 rounded-2xl shadow-sm flex flex-col justify-between gap-5" style={{ transform: 'rotate(0.5deg)' }}>
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-2">Book a call</p>
+              <p className="font-gelica text-xl text-white italic leading-snug">Let's talk through your project over a quick call.</p>
+            </div>
+            <div>
+              <a
+                href={`mailto:mowaninuoreoluwao@gmail.com?subject=Let's book a call&body=Hi Mowa, I'd love to schedule a call to discuss a potential project.`}
+                className="inline-block font-mono text-[10px] uppercase tracking-widest px-5 py-2.5 bg-white text-plum rounded-full hover:bg-lilac transition-colors duration-200 cursor-pointer"
+              >
+                Book a call ↗
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
 
 // PROJECTS OVERVIEW PAGE — lists all projects, leads into individual pages
 // ─────────────────────────────────────────────────────────────────────────────
@@ -927,14 +1182,14 @@ const ProjectsOverviewPage = ({ onClose, onSelectProject }: { onClose: () => voi
         ← Back
       </button>
 
-      <div className="max-w-5xl mx-auto px-6 pt-24 pb-32">
+      <div className="max-w-7xl mx-auto px-8 lg:px-16 pt-24 pb-32">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-20 text-center">
           <p className="font-mono text-[10px] uppercase tracking-widest text-ink/35 mb-3">Selected Work</p>
           <h1 className="font-gelica text-5xl md:text-6xl text-plum leading-tight">My Projects.</h1>
           <p className="font-satoshi text-base text-ink/50 mt-3 max-w-md mx-auto">Click any project to explore the full case study.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-20 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-24 items-start">
           {projects.map((p, i) => (
             <motion.button
               key={p.title}
@@ -2024,7 +2279,7 @@ function generateFlightPath(sx: number, sy: number, tx: number, ty: number) {
 }
 
 /* ── Orchestrator ── */
-const MagicButterfly = ({ ready, isHomePage }: { ready: boolean; isHomePage: boolean }) => {
+const MagicButterfly = ({ ready, isHomePage, isReadingPage }: { ready: boolean; isHomePage: boolean; isReadingPage: boolean }) => {
   const [phase, setPhase] = useState<'flying' | 'perching' | 'bursting'>('flying');
   const [gone, setGone] = useState(false);
   const [perchIdx, setPerchIdx] = useState(0);
@@ -2092,6 +2347,25 @@ const MagicButterfly = ({ ready, isHomePage }: { ready: boolean; isHomePage: boo
   // Reset gone state when returning to homepage
   useEffect(() => { if (isHomePage) setGone(false); }, [isHomePage]);
 
+  // When entering a reading page (About / case study), fly to a quiet companion
+  // perch near the top of the content and stop flying around
+  useEffect(() => {
+    if (!ready) return;
+    if (isReadingPage) {
+      clearTimer();
+      setGone(false);
+      doFlyTo(
+        window.innerWidth * 0.88,
+        window.innerHeight * 0.14,
+        () => {
+          setPhase('perching');
+          animate(bRot, 0, { duration: 1.2, ease: 'easeInOut' });
+          // stay — no scheduleNext so it perches quietly
+        }
+      );
+    }
+  }, [isReadingPage, ready, doFlyTo, bRot]);
+
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (phase === 'bursting') return;
@@ -2126,26 +2400,34 @@ const MagicButterfly = ({ ready, isHomePage }: { ready: boolean; isHomePage: boo
 
   return (
     <>
-      {/* Trailing dust */}
-      {isVisible && DUST_COLORS.map((color, i) => (
+      {/* Trailing dust — only on homepage where movement is playful */}
+      {isVisible && !isReadingPage && DUST_COLORS.map((color, i) => (
         <DustParticle key={i} index={i} color={color} motionX={bX} motionY={bY} />
       ))}
 
       {/* Butterfly */}
       {isVisible && (
         <motion.div
-          style={{ position: 'fixed', top: 0, left: 0, x: bX, y: bY, translateX: '-50%', translateY: '-50%', rotate: smoothRot, zIndex: 9998, cursor: 'pointer', filter: 'drop-shadow(0 4px 18px rgba(14,165,233,.5))' }}
+          style={{
+            position: 'fixed', top: 0, left: 0, x: bX, y: bY,
+            translateX: '-50%', translateY: '-50%', rotate: smoothRot,
+            zIndex: 9998, cursor: 'pointer',
+            filter: isReadingPage
+              ? 'drop-shadow(0 2px 10px rgba(84,19,136,.25))'
+              : 'drop-shadow(0 4px 18px rgba(14,165,233,.5))',
+            opacity: isReadingPage ? 0.85 : 1,
+          }}
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.18, filter: 'drop-shadow(0 6px 24px rgba(14,165,233,.7))' }}
+          animate={{ scale: isReadingPage ? 0.75 : 1, opacity: isReadingPage ? 0.85 : 1 }}
+          whileHover={{ scale: isReadingPage ? 0.88 : 1.18, filter: 'drop-shadow(0 6px 24px rgba(84,19,136,.5))' }}
           onClick={handleClick}
         >
-          {/* Inner wrapper handles perch-bob without conflicting with position */}
+          {/* Inner wrapper handles perch-bob — slower & gentler on reading pages */}
           <motion.div
-            animate={{ y: isFlying ? 0 : [0, -6, 0] }}
-            transition={isFlying ? { duration: 0.3 } : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ y: isFlying ? 0 : [0, -5, 0] }}
+            transition={isFlying ? { duration: 0.3 } : { duration: isReadingPage ? 4.2 : 2.4, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <ButterflyShape isFlying={isFlying} />
+            <ButterflyShape isFlying={isFlying && !isReadingPage} />
           </motion.div>
         </motion.div>
       )}
@@ -2153,6 +2435,261 @@ const MagicButterfly = ({ ready, isHomePage }: { ready: boolean; isHomePage: boo
       {/* Burst explosion */}
       {phase === 'bursting' && <BurstExplosion key={burstKey} x={burstPos.x} y={burstPos.y} />}
     </>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MOBILE LAYOUT — scrollable, section-based layout for phones
+// ─────────────────────────────────────────────────────────────────────────────
+const MobileLayout = ({
+  onOpenAbout,
+  onSelectProject,
+}: {
+  onOpenAbout: () => void;
+  onSelectProject: (key: string) => void;
+}) => {
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const bgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect x='0' y='0' width='100' height='100' fill='%23FEFCFA' fill-opacity='1'/%3E%3Crect x='100' y='100' width='100' height='100' fill='%23FEFCFA' fill-opacity='1'/%3E%3Crect x='100' y='0' width='100' height='100' fill='%23C9BCE8' fill-opacity='0.05'/%3E%3Crect x='0' y='100' width='100' height='100' fill='%23C9BCE8' fill-opacity='0.05'/%3E%3C/svg%3E")`;
+  const folderTabColors = ['bg-[#fbcfe8]', 'bg-[#c7d2fe]', 'bg-[#e8d5b5]'];
+  const folderBodyColors = ['bg-[#fce7f3]', 'bg-[#e0e7ff]', 'bg-[#f4e4c4]'];
+  const arrowColor = '#b0a89e';
+  const sw = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, strokeDasharray: '5 3.5', fill: 'none' };
+  const tip = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
+
+  // Load Caveat font for handwriting
+  useEffect(() => {
+    const id = 'caveat-font';
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id; link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap';
+    document.head.appendChild(link);
+  }, []);
+
+  return (
+    <div
+      className="w-full min-h-screen bg-[#fefcfa]"
+      style={{ backgroundImage: bgPattern, backgroundSize: '200px 200px' }}
+    >
+      {/* ── Welcome intro butterflies — fly across before content appears ── */}
+      <motion.div className="fixed top-0 left-0 text-6xl drop-shadow-md z-[800] pointer-events-none" initial={{ opacity: 0, x: '50vw', y: '60vh', rotate: -15, scale: 0.8 }} animate={{ opacity: [0, 1, 1, 1, 0], x: ['50vw', '45vw', '55vw', '80vw', '110vw'], y: ['60vh', '45vh', '55vh', '20vh', '-10vh'], rotate: [-15, 10, -20, 15, 30], scale: [0.8, 1.2, 1, 1.1, 0.8] }} transition={{ duration: 2.5, times: [0, 0.1, 0.4, 0.7, 1], ease: 'easeInOut', delay: 0.3 }}>🦋</motion.div>
+      <motion.div className="fixed top-0 left-0 text-5xl drop-shadow-md z-[790] pointer-events-none" initial={{ opacity: 0, x: '30vw', y: '70vh', rotate: 15, scale: 0.6 }} animate={{ opacity: [0, 0.8, 0.8, 0], x: ['30vw', '20vw', '40vw', '10vw'], y: ['70vh', '50vh', '30vh', '10vh'], rotate: [15, -10, 5, 25], scale: [0.6, 1, 0.9, 0.7] }} transition={{ duration: 2.2, times: [0, 0.2, 0.6, 1], ease: 'easeInOut', delay: 0.8 }}>🦋</motion.div>
+      <motion.div className="fixed top-0 left-0 text-4xl drop-shadow-md z-[790] pointer-events-none" initial={{ opacity: 0, x: '70vw', y: '60vh', rotate: -10, scale: 0.5 }} animate={{ opacity: [0, 0.7, 0.7, 0], x: ['70vw', '60vw', '75vw', '90vw'], y: ['60vh', '40vh', '20vh', '0vh'], rotate: [-10, 15, -5, 20], scale: [0.5, 0.8, 0.7, 0.6] }} transition={{ duration: 2.0, times: [0, 0.3, 0.7, 1], ease: 'easeInOut', delay: 1.0 }}>🦋</motion.div>
+
+      {/* Main content — fades in after butterfly intro */}
+      <motion.div className="w-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5, duration: 0.8 }}>
+
+      {/* Floating butterfly — fixed, drifts on left side */}
+      <PathButterfly className="fixed bottom-[20%] left-[6%]" driftX={6} driftY={3} delay={0.9} size="text-lg" />
+
+      {/* Top bar */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm py-2 text-center">
+        <p className="font-mono text-[9px] text-ink/50 uppercase tracking-widest select-none">Click on cards to explore</p>
+      </div>
+
+      {/* About me card section */}
+      <div className="relative flex justify-center pt-6 pb-2 px-6">
+        {/* "Hi, this is me" handwriting */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.8 }}
+          className="absolute bottom-4 right-3 pointer-events-none select-none z-10"
+          style={{ transform: 'rotate(-5deg)' }}
+        >
+          <svg width="52" height="80" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 3 }}>
+            <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" {...sw} />
+            <path d="M 2 17 L 8 8 L 17 13" {...tip} />
+          </svg>
+          <span style={{ fontFamily: "'Caveat', cursive", fontSize: '15px', color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap', display: 'block' }}>Hi, this is me ✨</span>
+        </motion.div>
+
+        {/* Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.7, type: 'spring', stiffness: 100, damping: 20 }}
+          className="relative cursor-pointer"
+          style={{ rotate: -2 } as React.CSSProperties}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => { playSound('flip'); onOpenAbout(); }}
+        >
+          {/* 🎀 Ribbon — attached to top-right of card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.4, rotate: -20 }}
+            animate={{ opacity: 1, scale: 1, rotate: 12 }}
+            transition={{ delay: 0.5, duration: 0.6, type: 'spring' }}
+            className="absolute -right-4 -top-3 text-2xl pointer-events-none select-none z-20"
+          >🎀</motion.div>
+
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+            <PaperClip />
+          </div>
+          <div className="bg-[#fdfbf7] border border-[#e8e0d5] shadow-md rounded-sm flex flex-col items-center p-3" style={{ width: '162px' }}>
+            <div className="flex items-center justify-center mb-1">
+              <div className="bg-white p-1 pb-4 shadow-md border border-black/5 rotate-[2deg]">
+                <img src="/mowa.jpeg" alt="Mowa Otun" className="w-24 h-24 object-cover object-center" draggable={false} referrerPolicy="no-referrer" />
+              </div>
+            </div>
+            <div className="w-full mt-2">
+              <h2 className="font-gelica text-sm text-plum leading-tight">Mowa Otun</h2>
+              <p className="font-mono text-[8px] uppercase tracking-widest text-ink/40 mt-1 whitespace-nowrap">Product & UX Designer</p>
+              <span className="font-satoshi text-[8px] italic text-ink/25 mt-0.5 block">click to open</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Hero text */}
+      <div className="text-center px-6 pt-5 pb-10">
+        <h1
+          className="font-gelica text-[3.2rem] tracking-tight leading-[0.95]"
+          style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.10), 0px 6px 18px rgba(84,19,136,0.07)' }}
+        >
+          <span className="text-plum font-black block">Super</span>
+          <span className="text-plum font-black block">Product</span>
+          <span className="text-rose italic font-black block">Designer.</span>
+        </h1>
+        <p className="font-satoshi text-ink/70 mt-4 text-sm leading-relaxed max-w-[230px] mx-auto">
+          A curated collection of thoughts,<br /> work, and design thinking.
+        </p>
+      </div>
+
+      {/* Projects — vertical polaroid style (like desktop project page) */}
+      <div className="px-5 pt-2 pb-10">
+        <div className="flex items-center gap-3 mb-10 px-1">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-ink/35">Selected Work</p>
+          <div className="flex-1 h-px bg-black/8" />
+        </div>
+        {(() => {
+          const washiAccents = ['bg-rose', 'bg-sky', 'bg-lilac'];
+          const cardAngles = ['-1.5deg', '1deg', '-0.5deg'];
+          return (
+            <div className="flex flex-col gap-10">
+              {Object.entries(PROJECT_DATA).map(([, p], i) => (
+                <motion.div
+                  key={p.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + i * 0.12 }}
+                  onClick={() => { playSound('folder'); onSelectProject(p.title); }}
+                  className="cursor-pointer relative"
+                  style={{ transform: `rotate(${cardAngles[i]})` }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {/* Washi tape */}
+                  <div
+                    className={`absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 opacity-70 shadow-sm z-10 ${washiAccents[i]}`}
+                    style={{ mixBlendMode: 'multiply', transform: 'rotate(-1.5deg)' }}
+                  >
+                    <div className="w-full h-full opacity-20" style={{ backgroundImage: WASHI_NOISE }} />
+                  </div>
+                  {/* Polaroid card */}
+                  <div className="bg-white p-3 pb-4 shadow-md border border-gray-200/60">
+                    <div className="w-full aspect-[16/9] overflow-hidden bg-gray-100">
+                      {p.thumbnail && (
+                        <img src={p.thumbnail} alt={p.title} className="w-full h-full object-cover" draggable={false} />
+                      )}
+                    </div>
+                    <div className="mt-3 px-1">
+                      <div className="flex flex-wrap gap-1 mb-1.5">
+                        {p.tags.slice(0, 2).map(t => (
+                          <span key={t} className="font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 border border-black/10 text-ink/35 rounded-sm">{t}</span>
+                        ))}
+                      </div>
+                      <h2 className="font-gelica text-base text-plum leading-snug">{p.title}</h2>
+                      <p className="font-satoshi text-xs text-ink/50 italic mt-0.5">{p.subtitle}</p>
+                      <p className="font-mono text-[9px] uppercase tracking-widest text-ink/35 mt-3">Open Case Study →</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* Reviews */}
+      <div className="px-5 pt-2 pb-10">
+        <div className="flex items-center gap-3 mb-6">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-ink/35">Reviews</p>
+          <div className="flex-1 h-px bg-black/8" />
+        </div>
+        <div className="relative bg-[#fdfbf7] border border-black/5 shadow-md p-5" style={{ transform: 'rotate(-0.5deg)' }}>
+          <div className="absolute -top-2 left-5 w-20 h-5 bg-lilac/55 z-10 shadow-sm" style={{ mixBlendMode: 'multiply', transform: 'rotate(-1.5deg)' }} />
+          {/* Stars + label */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-yellow-400 text-sm tracking-tight">★★★★★</span>
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink/30">Review</span>
+          </div>
+          <p className="font-satoshi italic text-sm text-ink/70 leading-relaxed mb-4">"{reviews[reviewIndex].quote}"</p>
+          <div className="h-px bg-black/8 mb-4" />
+          <div className="flex items-center gap-3">
+            <div className="bg-white p-1 pb-4 shadow-sm border border-black/5 shrink-0" style={{ transform: `rotate(${reviews[reviewIndex].photoRotate})` }}>
+              <img src={reviews[reviewIndex].photoSrc} alt={reviews[reviewIndex].author} className="w-10 h-10 object-cover" draggable={false} referrerPolicy="no-referrer" />
+            </div>
+            <div>
+              <p className="font-satoshi font-bold text-sm text-plum">{reviews[reviewIndex].author}</p>
+              <p className="font-satoshi text-[9px] uppercase tracking-wider text-ink/40">{reviews[reviewIndex].role}</p>
+            </div>
+          </div>
+          {/* Navigation — circular arrow buttons */}
+          <div className="flex items-center justify-between mt-5">
+            <button
+              onClick={() => { playSound('soft'); setReviewIndex(i => (i - 1 + reviews.length) % reviews.length); }}
+              className="w-9 h-9 rounded-full border border-black/15 flex items-center justify-center text-ink/50 active:border-plum/60 active:text-plum transition-colors cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4.5 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+            <div className="flex gap-1.5">
+              {reviews.map((_, i) => (
+                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === reviewIndex ? 'bg-plum' : 'bg-plum/20'}`} />
+              ))}
+            </div>
+            <button
+              onClick={() => { playSound('soft'); setReviewIndex(i => (i + 1) % reviews.length); }}
+              className="w-9 h-9 rounded-full border border-black/15 flex items-center justify-center text-ink/50 active:border-plum/60 active:text-plum transition-colors cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5.5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div className="px-5 pt-2 pb-20">
+        <div className="flex items-center gap-3 mb-6">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-ink/35">Reach Out</p>
+          <div className="flex-1 h-px bg-black/8" />
+        </div>
+        <div className="relative bg-white border border-black/5 shadow-md rounded-sm p-6 flex flex-col items-center gap-4" style={{ transform: 'rotate(0.3deg)' }}>
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-5 bg-sky/50 shadow-sm" style={{ mixBlendMode: 'multiply', transform: 'rotate(-1deg)' }} />
+          <span className="font-gelica italic text-sm text-plum tracking-wide">reach out ✦</span>
+          <div className="flex gap-6 items-start">
+            <div className="flex flex-col items-center gap-1.5">
+              <a href="mailto:mowaotun2000@gmail.com" className="w-12 h-12 rounded-full bg-rose/10 border border-rose/20 flex items-center justify-center text-rose shadow-sm">
+                <Mail size={20} />
+              </a>
+              <span className="font-mono text-[9px] uppercase tracking-widest text-ink/50">Gmail</span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-sky/10 border border-sky/20 flex items-center justify-center text-sky shadow-sm">
+                <Linkedin size={20} />
+              </a>
+              <span className="font-mono text-[9px] uppercase tracking-widest text-ink/50">LinkedIn</span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <a href="https://docs.google.com/document/d/your-doc-id/edit" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-plum/10 border border-plum/20 flex items-center justify-center text-plum shadow-sm">
+                <FileText size={20} />
+              </a>
+              <span className="font-mono text-[9px] uppercase tracking-widest text-ink/50">Resume</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </motion.div>{/* end content wrapper */}
+    </div>
   );
 };
 
@@ -2164,6 +2701,7 @@ export default function App() {
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const [showProjectsOverview, setShowProjectsOverview] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -2181,21 +2719,27 @@ export default function App() {
 
   const isMobile = vw < 640;
 
-  // Show paths after welcome screen completes (8.5s: 3.5s intro text + 3s butterflies + 2s buffer)
+  // Mobile: wait for 3.4 s intro animation. Desktop: wait for 8.5 s welcome animation.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowPaths(true);
-    }, 8500);
+    const delay = isMobile ? 3400 : 8500;
+    const timer = setTimeout(() => setShowPaths(true), delay);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isMobile]);
 
   return (
     <>
+      {isMobile ? (
+        <MobileLayout
+          onOpenAbout={() => setShowAbout(true)}
+          onSelectProject={(key) => setActiveProject(key)}
+        />
+      ) : (
       <motion.div
+        ref={canvasRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
-        className="w-full h-screen relative overflow-hidden bg-[#fefcfa] selection:bg-lilac selection:text-plum cursor-default"
+        className="desktop-custom-cursor w-full h-screen relative overflow-hidden bg-[#fefcfa] selection:bg-lilac selection:text-plum"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect x='0' y='0' width='100' height='100' fill='%23FEFCFA' fill-opacity='1'/%3E%3Crect x='100' y='100' width='100' height='100' fill='%23FEFCFA' fill-opacity='1'/%3E%3Crect x='100' y='0' width='100' height='100' fill='%23C9BCE8' fill-opacity='0.05'/%3E%3Crect x='0' y='100' width='100' height='100' fill='%23C9BCE8' fill-opacity='0.05'/%3E%3C/svg%3E")`,
           backgroundSize: '200px 200px'
@@ -2270,15 +2814,15 @@ export default function App() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.5, delay: 4.0, ease: "easeOut" }}
-              className="absolute top-[22%] sm:top-[26%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 text-center"
+              className="absolute top-[27%] sm:top-[26%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 text-center"
             >
-              <h1 className="font-gelica text-[2.6rem] sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95]" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.10), 0px 6px 18px rgba(84,19,136,0.07)' }}>
+              <h1 className="font-gelica text-[3.1rem] sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95]" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.10), 0px 6px 18px rgba(84,19,136,0.07)' }}>
                 <span className="text-plum font-black block">Super</span>
                 <span className="text-plum font-black block">Product</span>
                 <span className="text-rose italic font-black block">Designer.</span>
               </h1>
               <p className="font-satoshi text-ink/70 mt-3 sm:mt-6 max-w-sm text-sm sm:text-lg leading-relaxed mx-auto">
-                A curated collection of thoughts, work, and design thinking. <br/>
+                A curated collection of thoughts,<br className="sm:hidden" /> work, and design thinking.
               </p>
             </motion.div>
 
@@ -2286,31 +2830,30 @@ export default function App() {
             <ScribbleAnnotations show={showPaths} compact={isMobile} />
 
             {/* Draggable Elements */}
-            <ProjectStack className={isMobile ? "top-[5%] left-[3%]" : "top-[8%] left-[11%]"} compact={isMobile} setCursorText={setCursorText} delay={5.0} onOpenProjects={() => setShowProjectsOverview(true)} />
+            <ProjectStack className={isMobile ? "top-[54%] left-[calc(50%-80px)]" : "top-[8%] left-[11%]"} compact={isMobile} setCursorText={setCursorText} delay={5.0} onOpenProjects={() => setShowProjectsOverview(true)} constraintsRef={canvasRef} />
 
             <FlipCard
-              className={isMobile ? "top-[5%] right-[3%]" : "top-[10%] right-[11%]"}
+              className={isMobile ? "top-[2%] left-[calc(50%-76px)]" : "top-[10%] right-[11%]"}
               rotation={-3}
               zIndex={15}
               compact={isMobile}
               setCursorText={setCursorText}
               delay={6.1}
               onOpenAbout={() => setShowAbout(true)}
+              constraintsRef={canvasRef}
             />
 
             <ContactEnvelope
-              className={isMobile ? "top-[58%] right-[3%]" : "top-[62%] right-[12%]"}
+              className={isMobile ? "top-[74%] left-[calc(50%-104px)]" : "top-[62%] right-[12%]"}
               rotation={5}
               zIndex={40}
               compact={isMobile}
               delay={6.2}
               setCursorText={setCursorText}
+              constraintsRef={canvasRef}
             />
 
-
-
-
-            <ReviewStack className={isMobile ? "top-[53%] left-[3%]" : "top-[58%] left-[8%]"} compact={isMobile} setCursorText={setCursorText} delay={4.4} />
+            <ReviewStack className={isMobile ? "top-[67%] left-[calc(50%-104px)]" : "top-[58%] left-[8%]"} compact={isMobile} setCursorText={setCursorText} delay={4.4} constraintsRef={canvasRef} />
 
             {/* Path Butterflies — floating 🦋 accents, appear after welcome screen */}
             {showPaths && (
@@ -2330,26 +2873,22 @@ export default function App() {
 
 
           </motion.div>
+      )}
 
       {/* MagicButterfly rendered OUTSIDE the transformed/overflow-hidden motion.div
           so that position:fixed works relative to the real viewport.
           Only mounted after welcome intro finishes (showPaths = 8.5 s). */}
-      <MagicButterfly ready={showPaths} isHomePage={!showAbout && !showProjectsOverview && !activeProject} />
+      <MagicButterfly ready={showPaths} isHomePage={!showAbout && !showProjectsOverview && !activeProject} isReadingPage={showAbout || !!activeProject} />
 
-      {/* Custom cursor — arrow + pill badge */}
-      {showPaths && cursorText && (
+      {/* Hover label only — cursor itself is styled via CSS */}
+      {!isMobile && showPaths && cursorText && !showAbout && !showProjectsOverview && !activeProject && (
         <motion.div
-          className="fixed top-0 left-0 pointer-events-none z-[9999] flex items-end gap-1.5"
-          animate={{ x: mousePos.x, y: mousePos.y, opacity: 1, scale: 1 }}
+          className="fixed top-0 left-0 pointer-events-none z-[9999]"
+          animate={{ x: mousePos.x + 18, y: mousePos.y + 18, opacity: 1, scale: 1 }}
           initial={{ opacity: 0, scale: 0.8 }}
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ type: "spring", stiffness: 420, damping: 28 }}
         >
-          {/* Cursor arrow */}
-          <svg width="26" height="26" viewBox="17 14 55 57" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 2px 6px rgba(84,19,136,0.35))' }}>
-            <path d="M33.3223 66.5446L20.5491 21.6653C19.8896 19.3479 22.2926 17.3469 24.4777 18.3939L66.795 38.6707C69.0453 39.7489 68.876 42.9833 66.526 43.8174L49.1221 49.9939C48.4899 50.2181 47.9598 50.6596 47.6275 51.2385L38.4762 67.1755C37.2406 69.3275 34.0012 68.931 33.3223 66.5446Z" fill="#541388"/>
-          </svg>
-          {/* Label pill */}
           <div className="bg-plum text-white font-satoshi font-semibold text-[11px] tracking-wide px-3.5 py-1.5 rounded-full whitespace-nowrap shadow-[0_4px_16px_rgba(84,19,136,0.28)] mb-1">
             {cursorText}
           </div>

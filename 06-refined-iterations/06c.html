@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Layout 06c — Full-Width Hero + Hidden Nav</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400;1,9..144,700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="_base.css"/>
+  <style>
+    body { background: var(--bg); padding: 0; margin: 0; }
+    main { max-width: 100%; margin: 0 auto; padding: 0 0 48px; }
+
+    .hero-fullwidth { width: 100%; position: relative; }
+    .section-divider { margin: 36px 16px; display: flex; align-items: center; gap: 12px; }
+    .divider-line { flex: 1; height: 1px; background: rgba(84,19,136,.2); }
+    .divider-label { font-family: monospace; font-size: 7px; text-transform: uppercase; letter-spacing: .2em; color: rgba(4,4,4,.3); }
+  </style>
+</head>
+<body>
+
+  <main>
+    <!-- Hero — Full Width -->
+    <div class="hero-fullwidth">
+      <div style="position:relative;z-index:2">
+        <div class="tape tape-rose" style="width:60px;top:-8px;left:50%;transform:translateX(-50%)"></div>
+        <h1 style="padding:56px 20px 0;text-align:center">Super<br/><em>Product</em><br/>Designer.</h1>
+        <p style="text-align:center;padding:0 20px 56px;color:rgba(255,255,255,.6);font-size:12px;margin-top:8px">A curated collection of thoughts,<br/>work, and design thinking.</p>
+      </div>
+      <div style="position:absolute;inset:0;opacity:.3;background:radial-gradient(circle at 80% 20%, rgba(255,255,255,.1) 0%, transparent 40%);pointer-events:none"></div>
+    </div>
+
+    <!-- About Section -->
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <span class="divider-label">About</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="page-section">
+      <div class="page-card" style="transform:rotate(-1deg)">
+        <div class="tape tape-lilac" style="width:40px;top:-6px;left:14px;transform:rotate(-2deg)"></div>
+        <div class="tape tape-sky" style="width:34px;top:-6px;right:14px;transform:rotate(2.5deg)"></div>
+        <div style="text-align:center">
+          <div class="polaroid" style="margin-bottom:12px;transform:rotate(2deg)">
+            <img src="../public/mowa.jpeg" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop'" alt="Mowa"/>
+            <span>mowa, 2024</span>
+          </div>
+          <h2 class="gelica" style="font-size:20px;color:var(--plum)">Mowa Otun</h2>
+          <p class="mono" style="font-size:7px;text-transform:uppercase;letter-spacing:.2em;color:rgba(4,4,4,.38);margin-top:4px">Product & UX Designer</p>
+          <p style="font-size:11px;color:rgba(4,4,4,.55);margin-top:8px;line-height:1.6">Bridging aesthetics &amp; functionality with intention.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects Section -->
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <span class="divider-label">Projects</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="page-section">
+      <div class="page-card" style="transform:rotate(.5deg)">
+        <div class="tape tape-stripe" style="width:48px;top:-6px;left:50%;transform:translateX(-50%)"></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div><img src="../public/she.jpg" onerror="this.src='https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=600&auto=format&fit=crop'" alt="She" style="width:100%;height:100px;object-fit:cover;filter:grayscale(.25);border-radius:4px"/><p class="gelica" style="font-size:16px;margin-top:8px;color:var(--plum)">She</p><span class="mono" style="font-size:7px;text-transform:uppercase;letter-spacing:.18em;color:rgba(4,4,4,.35)">E-Commerce</span></div>
+          <div><img src="../public/fox-holistic-care.jpg" onerror="this.src='https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?q=80&w=600&auto=format&fit=crop'" alt="Fox Holistic Care" style="width:100%;height:100px;object-fit:cover;filter:grayscale(.25);border-radius:4px"/><p class="gelica" style="font-size:16px;margin-top:8px;color:var(--plum)">Fox Holistic Care</p><span class="mono" style="font-size:7px;text-transform:uppercase;letter-spacing:.18em;color:rgba(4,4,4,.35)">Mental Health</span></div>
+          <div><img src="../public/build-africa-ai.jpg" onerror="this.src='https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop'" alt="Build Africa AI" style="width:100%;height:100px;object-fit:cover;filter:grayscale(.25);border-radius:4px"/><p class="gelica" style="font-size:16px;margin-top:8px;color:var(--plum)">Build Africa AI</p><span class="mono" style="font-size:7px;text-transform:uppercase;letter-spacing:.18em;color:rgba(4,4,4,.35)">AI · Construction</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <span class="divider-label">Reviews</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="page-section">
+      <div class="review-card">
+        <div class="tape tape-rose" style="width:52px;top:-6px;left:50%;transform:translateX(-50%)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span class="stars">★★★★★</span>
+          <span class="review-label">Review</span>
+        </div>
+        <p class="review-text" style="color:rgba(4,4,4,.7)">An exceptional product designer who understands both the user and the business. Her work combines beauty with functionality.</p>
+        <div style="height:1px;background:rgba(0,0,0,.07);margin:12px 0"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="polaroid" style="transform:rotate(-2deg);padding:4px 4px 12px"><img src="../public/elena.jpg" onerror="this.src='https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop'" alt="Elena" style="width:32px;height:32px;object-fit:cover"/></div>
+          <div>
+            <p class="gelica" style="font-size:11px;color:var(--plum)">Elena Rodriguez</p>
+            <p style="font-size:8px;color:rgba(4,4,4,.45);margin-top:2px">Product Lead</p>
+            <p class="mono" style="font-size:6px;text-transform:uppercase;letter-spacing:.1em;color:rgba(4,4,4,.28);margin-top:2px">Build Africa AI</p>
+          </div>
+        </div>
+        <p style="font-size:9px;color:rgba(4,4,4,.35);margin-top:12px">tap to cycle →</p>
+        <div class="nav-row">
+          <button class="nav-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2L3.5 6L7.5 10" stroke="#541388" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="nav-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2L8.5 6L4.5 10" stroke="#541388" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <span class="divider-label">Contact</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="page-section">
+      <div class="page-card" style="text-align:center;transform:rotate(.3deg)">
+        <div class="tape tape-sky" style="width:36px;top:-6px;left:50%;transform:translateX(-50%)"></div>
+        <div class="contact-row">
+          <a href="mailto:mowaotun2000@gmail.com" class="contact-btn"><span>Gmail</span></a>
+          <a href="https://linkedin.com" target="_blank" class="contact-btn"><span>LinkedIn</span></a>
+          <a href="#" class="contact-btn"><span>Resume</span></a>
+        </div>
+      </div>
+    </div>
+
+    <p style="text-align:center;font-family:monospace;font-size:7.5px;color:rgba(4,4,4,.28);text-transform:uppercase;letter-spacing:.18em;padding:0 20px"><a href="index.html" style="color:inherit;text-decoration:none">← all variations</a></p>
+  </main>
+
+</body>
+</html>

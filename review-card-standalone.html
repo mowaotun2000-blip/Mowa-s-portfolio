@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Washi Tape Stack — Review Card</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #edeaf4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Satoshi', sans-serif;
+      gap: 0;
+      padding: 40px 24px;
+    }
+
+    /* ── Label ─────────────────────────────── */
+    .label {
+      font-family: monospace;
+      font-size: 8.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.26em;
+      color: rgba(84, 19, 136, 0.55);
+      margin-bottom: 36px;
+    }
+
+    /* ── Stack wrapper ─────────────────────── */
+    .stack {
+      position: relative;
+      width: 240px;
+      height: 230px;
+    }
+
+    /* ── Card base ─────────────────────────── */
+    .card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 240px;
+      background: #fdfcfa;
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      padding: 22px 18px 16px;
+      transform-origin: bottom center;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.3s ease;
+    }
+
+    /* Stack positions */
+    .card-bottom {
+      transform: rotate(4.5deg) translateX(8px) scale(0.91);
+      z-index: 1;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+    }
+    .card-middle {
+      transform: rotate(-2.5deg) translateX(-2px) scale(0.955);
+      z-index: 2;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+    }
+    .card-top {
+      transform: rotate(0deg) translateX(0) scale(1);
+      z-index: 3;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+    }
+
+    /* Hover — top card lifts, back cards fan */
+    .stack:hover .card-top {
+      transform: rotate(0deg) translateX(0) scale(1.08) translateY(-16px);
+      box-shadow: 0 20px 48px rgba(84, 19, 136, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .stack:hover .card-bottom {
+      transform: rotate(7deg) translateX(14px) scale(0.91);
+    }
+    .stack:hover .card-middle {
+      transform: rotate(-5deg) translateX(-8px) scale(0.955);
+    }
+
+    /* ── Washi tape ────────────────────────── */
+    .tape {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 68px;
+      height: 16px;
+      border-radius: 2px;
+      opacity: 0.82;
+      z-index: 10;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    /* Each tape has its own rotation baked into its card's transform context */
+    .card-bottom .tape {
+      background: #bae6fd;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.22) 0,
+        rgba(255,255,255,0.22) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+      rotate: -2deg;
+    }
+    .card-middle .tape {
+      background: #DABFFF;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.22) 0,
+        rgba(255,255,255,0.22) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+      rotate: 2deg;
+    }
+    .card-top .tape {
+      background: repeating-linear-gradient(
+        45deg,
+        #541388 0,
+        #541388 4px,
+        #DABFFF 4px,
+        #DABFFF 9px
+      );
+      rotate: -1.5deg;
+    }
+
+    /* Tape straightens on hover */
+    .stack:hover .card-top .tape {
+      rotate: 0deg;
+    }
+
+    /* ── Card header ───────────────────────── */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .stars {
+      font-size: 11px;
+      color: #FBBF24;
+      letter-spacing: 1px;
+    }
+    .review-label {
+      font-family: monospace;
+      font-size: 6.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: rgba(4, 4, 4, 0.22);
+    }
+
+    /* ── Quote ─────────────────────────────── */
+    .quote {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 11.5px;
+      line-height: 1.68;
+      color: rgba(4, 4, 4, 0.68);
+      margin-bottom: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── Rule ──────────────────────────────── */
+    .rule {
+      height: 1px;
+      background: rgba(0, 0, 0, 0.07);
+      margin-bottom: 12px;
+    }
+
+    /* ── Author row ────────────────────────── */
+    .author-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .polaroid {
+      background: white;
+      padding: 3px 3px 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      transform: rotate(-3deg);
+      flex-shrink: 0;
+    }
+    .polaroid img {
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      display: block;
+    }
+    .author-name {
+      font-family: 'Satoshi', sans-serif;
+      font-weight: 700;
+      font-size: 11.5px;
+      color: #541388;
+      line-height: 1.2;
+    }
+    .author-role {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 8.5px;
+      color: rgba(4, 4, 4, 0.45);
+      margin-top: 1px;
+    }
+    .author-company {
+      font-family: monospace;
+      font-size: 6.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(4, 4, 4, 0.28);
+      margin-top: 2px;
+    }
+
+    /* ── Cycle hint ────────────────────────── */
+    .hint {
+      font-family: monospace;
+      font-size: 6.5px;
+      color: rgba(84, 19, 136, 0.45);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .stack:hover .card-top .hint {
+      opacity: 1;
+    }
+
+    /* ── Arrow nav ─────────────────────────── */
+    .nav {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 36px;
+    }
+    .nav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(84, 19, 136, 0.18);
+      background: white;
+      box-shadow: 0 2px 8px rgba(84, 19, 136, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.18s ease;
+    }
+    .nav-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 14px rgba(84, 19, 136, 0.14);
+    }
+    .nav-btn:active {
+      transform: scale(0.93);
+    }
+    .nav-btn svg {
+      display: block;
+    }
+    .nav-counter {
+      font-family: monospace;
+      font-size: 9px;
+      color: rgba(4, 4, 4, 0.28);
+      letter-spacing: 0.14em;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    /* ── Footer hint ───────────────────────── */
+    .footer-hint {
+      font-family: monospace;
+      font-size: 7.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(4, 4, 4, 0.28);
+      margin-top: 14px;
+    }
+
+    /* ── Back link ─────────────────────────── */
+    .back-link {
+      margin-top: 32px;
+      font-family: monospace;
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(84, 19, 136, 0.4);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(84, 19, 136, 0.2);
+      padding-bottom: 1px;
+    }
+
+    /* ── Peel animation ────────────────────── */
+    @keyframes peelOff {
+      0%   { transform: rotate(0deg) translateX(0) scale(1); opacity: 1; }
+      100% { transform: rotate(-18deg) translateX(0) translateY(-240px) scale(0.9); opacity: 0; }
+    }
+    @keyframes dropIn {
+      0%   { transform: rotate(-4deg) translateX(0) translateY(-80px) scale(0.95); opacity: 0; }
+      100% { transform: rotate(0deg) translateX(0) scale(1); opacity: 1; }
+    }
+    .peeling {
+      animation: peelOff 0.34s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+      pointer-events: none;
+    }
+    .entering {
+      animation: dropIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <p class="label">Preview · Washi Tape Stack</p>
+
+  <!-- Stack -->
+  <div class="stack" id="stack">
+
+    <div class="card card-bottom" id="card-bottom">
+      <div class="tape"></div>
+      <div class="card-header">
+        <span class="stars">★★★★★</span>
+        <span class="review-label">Review</span>
+      </div>
+      <p class="quote" id="quote-bottom"></p>
+      <div class="rule"></div>
+      <div class="author-row">
+        <div class="polaroid"><img id="photo-bottom" src="" alt="" /></div>
+        <div>
+          <p class="author-name" id="name-bottom"></p>
+          <p class="author-role" id="role-bottom"></p>
+          <p class="author-company" id="company-bottom"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-middle" id="card-middle">
+      <div class="tape"></div>
+      <div class="card-header">
+        <span class="stars">★★★★★</span>
+        <span class="review-label">Review</span>
+      </div>
+      <p class="quote" id="quote-middle"></p>
+      <div class="rule"></div>
+      <div class="author-row">
+        <div class="polaroid"><img id="photo-middle" src="" alt="" /></div>
+        <div>
+          <p class="author-name" id="name-middle"></p>
+          <p class="author-role" id="role-middle"></p>
+          <p class="author-company" id="company-middle"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-top" id="card-top">
+      <div class="tape"></div>
+      <div class="card-header">
+        <span class="stars">★★★★★</span>
+        <span class="review-label">Review</span>
+      </div>
+      <p class="quote" id="quote-top"></p>
+      <div class="rule"></div>
+      <div class="author-row">
+        <div class="polaroid"><img id="photo-top" src="" alt="" /></div>
+        <div>
+          <p class="author-name" id="name-top"></p>
+          <p class="author-role" id="role-top"></p>
+          <p class="author-company" id="company-top"></p>
+        </div>
+      </div>
+      <p class="hint">click to cycle →</p>
+    </div>
+
+  </div>
+
+  <!-- Arrow navigation -->
+  <div class="nav">
+    <button class="nav-btn" id="btn-prev" aria-label="Previous">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M7.5 2L3.5 6L7.5 10" stroke="#541388" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <span class="nav-counter" id="counter">1/3</span>
+    <button class="nav-btn" id="btn-next" aria-label="Next">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M4.5 2L8.5 6L4.5 10" stroke="#541388" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <p class="footer-hint">Hover to lift · Click to cycle</p>
+  <a href="/" class="back-link">← Back to portfolio</a>
+
+  <script>
+    const reviews = [
+      {
+        quote: "I had the pleasure of mentoring Mowa, a talented and thoughtful product designer with a strong mix of product thinking and craft. She's incredibly proactive and dedicated, always taking feedback seriously.",
+        author: "Arielle Ferreira",
+        role: "Lead Product Designer",
+        company: "Jobget",
+        photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop",
+      },
+      {
+        quote: "Her design skills are exceptional, and she consistently delivers clean, user-focused solutions. Mowa is reliable, collaborative, and brings a positive attitude to every task.",
+        author: "Hassan Oladipupo",
+        role: "Product Team",
+        company: "Build Africa",
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop",
+      },
+      {
+        quote: "An exceptional product designer who blends aesthetics with functionality beautifully. Every design decision was intentional, research-backed, and user-centred.",
+        author: "Elena Rodriguez",
+        role: "Product Lead",
+        company: "Build Africa AI",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop",
+      },
+    ];
+
+    const N = reviews.length;
+    let topIdx = 0;
+    let busy = false;
+
+    function fill(slot, idx) {
+      const r = reviews[(idx + N) % N];
+      document.getElementById('quote-'   + slot).textContent = '\u201c' + r.quote + '\u201d';
+      document.getElementById('name-'    + slot).textContent = r.author;
+      document.getElementById('role-'    + slot).textContent = r.role;
+      document.getElementById('company-' + slot).textContent = r.company;
+      const img = document.getElementById('photo-' + slot);
+      img.src = r.photo;
+      img.alt = r.author;
+    }
+
+    function render() {
+      fill('bottom', topIdx + 2);
+      fill('middle', topIdx + 1);
+      fill('top',    topIdx);
+      document.getElementById('counter').textContent = (topIdx % N + 1) + '/' + N;
+    }
+
+    function cycle(dir) {
+      if (busy) return;
+      busy = true;
+
+      const top = document.getElementById('card-top');
+      top.classList.add('peeling');
+
+      setTimeout(() => {
+        top.classList.remove('peeling');
+        topIdx = ((topIdx + dir) % N + N) % N;
+        render();
+        top.classList.add('entering');
+        setTimeout(() => { top.classList.remove('entering'); busy = false; }, 420);
+      }, 340);
+    }
+
+    document.getElementById('card-top').addEventListener('click', () => cycle(1));
+    document.getElementById('btn-next').addEventListener('click', () => cycle(1));
+    document.getElementById('btn-prev').addEventListener('click', () => cycle(-1));
+
+    render();
+  </script>
+</body>
+</html>
