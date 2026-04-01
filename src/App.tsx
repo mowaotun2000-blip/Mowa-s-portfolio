@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion, animate, useMotionValue, useSpring } from 'motion/react';
 import { Quote, Mail, Linkedin, FileText } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 // ─── Card sound effects (Web Audio API) ───────────────────────────────────────
 const playSound = (type: 'folder' | 'flip' | 'review' | 'envelope' | 'note' | 'soft') => {
@@ -2914,6 +2915,7 @@ export default function App() {
           onOpenProject={(key) => setActiveProject(key)}
         />
       )}
+      <Analytics />
     </>
   );
 }
