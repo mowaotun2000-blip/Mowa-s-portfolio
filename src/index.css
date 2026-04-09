@@ -1,0 +1,39 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-satoshi: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-gelica: "Fraunces", ui-serif, Georgia, serif;
+
+  --color-sky: #0EA5E9;
+  --color-sky-vivid: #00B0FF;
+  --paper-base: #FFFEFD;
+  --paper-checker-blue: #F9FBFD;
+  --color-lilac: #DABFFF;
+  --color-plum: #541388;
+  --color-ink: #040404;
+  --color-rose: #D81E5B;
+}
+
+body {
+  background-color: var(--paper-base);
+  color: var(--color-ink);
+  background-image:
+    linear-gradient(45deg, var(--paper-checker-blue) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--paper-checker-blue) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--paper-checker-blue) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--paper-checker-blue) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* Custom cursor only activates on interactive cards — everywhere else stays default */
+.desktop-custom-cursor .cursor-pointer,
+.desktop-custom-cursor .cursor-pointer * {
+  cursor: url("data:image/svg+xml,%3Csvg width='20' height='21' viewBox='0 0 56 59' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.7943 51.3366L4.02118 6.45731C3.36165 4.13994 5.76468 2.13886 7.94972 3.18586L50.2671 23.4627C52.5173 24.5409 52.3481 27.7753 49.9981 28.6094L32.5941 34.7859C31.962 35.0101 31.4319 35.4515 31.0996 36.0305L21.9483 51.9675C20.7126 54.1195 17.4733 53.723 16.7943 51.3366Z' fill='%230EA5E9'/%3E%3Cpath d='M2.66853 6.83523C1.67924 3.35924 5.28242 0.358891 8.55998 1.92921L50.8784 22.2062C54.2528 23.8238 53.9984 28.6736 50.4735 29.9245L33.0713 36.1012C32.7555 36.2132 32.4904 36.4343 32.3243 36.7231L23.171 52.6604C21.3178 55.8878 16.4609 55.2942 15.4415 51.7157L2.66853 6.83523Z' stroke='%230EA5E9'/%3E%3C/svg%3E") 3 3, pointer !important;
+}
+
+.torn-edge {
+  clip-path: polygon(2% 1%, 98% 3%, 100% 98%, 1% 99%);
+}
