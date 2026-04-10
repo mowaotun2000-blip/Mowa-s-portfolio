@@ -151,7 +151,7 @@ const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact =
       <div style={{ width: compact ? '152px' : '220px', height: compact ? '188px' : '260px' }}>
           {/* FRONT FACE */}
           <div
-            className="w-full h-full bg-[#fdfbf7] border border-[#e8e0d5] shadow-md rounded-sm flex flex-col items-center justify-between p-4 select-none"
+            className="w-full h-full bg-[#fefefe] border border-[#e8e0d5] shadow-md rounded-sm flex flex-col items-center justify-between p-4 select-none"
           >
             {/* Portrait photo — polaroid style, larger */}
             <div className="flex-1 flex items-center justify-center">
@@ -673,7 +673,7 @@ const PROJECT_DATA: Record<string, {
       { type: 'asset', label: 'Interaction Demo', image: '/Interaction Demo.mov', desc: 'Navigation sparkle animation in context.' },
       { type: 'h2', sectionLabel: 'Key Decision', heading: 'The doctor booking page became a preview, not a form.', body: 'One of the biggest design shifts was reimagining how users book a consultation. Rather than a transactional form with time slots, I built an interactive preview where users could see who they would be speaking with, browse specialisations, and view speaking rates in an approachable, inviting way. For someone who has never sought mental health support before, choosing a person to trust matters far more than choosing a time slot.' },
       { type: 'asset', label: 'Booking Demo', image: '/Book Appointment.mov', desc: 'Doctor booking preview — doctor profile, rate display, warm visual treatment.' },
-      { type: 'h2', sectionLabel: 'The Process', heading: 'I used ChatGPT to write the platform\'s affirmative copy and content at scale.', body: 'With full design ownership and no dedicated copywriter, I used ChatGPT to generate header text, body copy, and the affirmative language woven throughout the platform. This kept the written tone consistent and warm across every page while freeing me to focus on the visual and interaction design that made the emotional strategy tangible.' },
+      { type: 'h2', sectionLabel: 'The Process', heading: 'I used an AI tool to write the platform\'s affirmative copy and content at scale.', body: 'With full design ownership and no dedicated copywriter, I used an AI tool to generate header text, body copy, and the affirmative language woven throughout the platform. This kept the written tone consistent and warm across every page while freeing me to focus on the visual and interaction design that made the emotional strategy tangible.' },
       { type: 'h2', sectionLabel: 'The Outcome', heading: 'Fox Holistic Care now serves over 200,000 users across the United States.', body: 'The platform launched on both mobile and desktop and **gained real traction**. Users specifically praised how calm the experience felt during navigation. The micro-interactions and affirmative language did what they were designed to do: **lower the emotional barrier** enough that people followed through.' },
       { type: 'stats', items: [{ value: '200,000+', label: 'Active users in the United States' }, { value: 'Verified', label: 'Psychology Today directory' }, { value: 'Secured', label: 'Insurance company partnerships' }, { value: '30–50%', label: 'User growth rate' }] },
       { type: 'asset', label: 'Final Product Showcase', image: '/Mobile light.jpg', desc: 'Home page and doctor booking preview. Soft, premium aesthetic.' },
@@ -709,13 +709,13 @@ const PROJECT_DATA: Record<string, {
       { type: 'asset', label: 'Interaction Demo', image: '/2d screenshot.png', desc: 'Redesigned entry flow — raw dimension input. Anyone with a tape measure can start.' },
       { type: 'h2', sectionLabel: 'Iteration', heading: 'Showing everything at once overwhelmed users on the 3D page.', body: 'The first version of the 3D results page displayed all information simultaneously — cost data, material quantities, and the 3D model competing for attention at once. User feedback was clear: **it was too much**. I restructured the layout using a **collapsible panel system**, letting users expand and collapse sections on demand. The model stayed prominent; the detail was available but not intrusive.' },
       { type: 'asset', label: 'Iteration Collage', image: '/3d-initial-1.jpg', image2: '/3d-final-1.jpg', desc: 'Before → After: initial 3D view vs. final polished, investor-ready version.' },
-      { type: 'h2', sectionLabel: 'The Process', heading: 'I used ChatGPT to pressure-test layouts and critique my own designs in real time.', body: 'Working in a compressed timeline with no existing product to benchmark against, I needed a fast second opinion at every stage. I used ChatGPT throughout the design process — to generate alternative layout directions, stress-test information hierarchy decisions, and critique my work before presenting to the team. It became an always-available collaborator that helped me move faster without sacrificing rigour.' },
-      { type: 'asset', label: 'Sketch / Exploration Grid', image: '/process-1.png', image2: '/process-2.png', desc: 'Two layout directions explored with ChatGPT before landing on the final approach.' },
+      { type: 'h2', sectionLabel: 'The Process', heading: 'I used an AI tool to pressure-test layouts and critique my own designs in real time.', body: 'Working in a compressed timeline with no existing product to benchmark against, I needed a fast second opinion at every stage. I used an AI tool throughout the design process — to generate alternative layout directions, stress-test information hierarchy decisions, and critique my work before presenting to the team. It became an always-available collaborator that helped me move faster without sacrificing rigour.' },
+      { type: 'asset', label: 'Sketch / Exploration Grid', image: '/process-1.png', image2: '/process-2.png', desc: 'Two layout directions explored with an AI tool before landing on the final approach.' },
       { type: 'h2', sectionLabel: 'The Outcome', heading: 'Build Africa AI won Best AI at Gitex 2025 and secured investor funding.', body: 'The platform was presented at Gitex 2025, one of the world\'s largest technology events, and **won the Best AI award**. Investors responded to the design directly — citing the animation quality, the user-friendliness, and the clarity of how AI solved the wait-time problem. The team also **secured investment**, validating the concept and the execution simultaneously.' },
       { type: 'stats', items: [{ value: 'Best AI', label: 'Gitex Global 2025' }, { value: 'Secured', label: 'Investor funding' }, { value: 'Instant', label: 'vs 4–6 week wait' }, { value: '1 platform', label: '2D + 3D + BOQ + AI cost' }] },
       { type: 'asset', label: 'Final Product Showcase', image: '/build-africa-mockup.jpg', desc: 'Finished Build Africa AI dashboard — full desktop view.' },
       { type: 'h2', sectionLabel: 'Reflection', heading: 'What I learned, and what I\'d do differently with AI tools.', body: 'This project taught me as much about speed and strategy as it did about design. A few things I\'m taking forward:' },
-      { type: 'bold-bullets', items: [{ bold: 'Primary research is worth protecting', text: '— even under launch pressure, the interviews with architects and civil engineers shaped every major decision. I\'d fight harder to preserve that time upfront.' }, { bold: 'AI critique accelerates iteration', text: '— using ChatGPT to challenge my layouts in real time saved rounds of internal review. This is now a standard part of my process.' }, { bold: 'Designing with no benchmark is a feature, not a problem', text: '— the absence of a competitor to copy forced genuinely original thinking. The Gitex judges noticed.' }, { bold: 'Next time: prototype with AI before building', text: '— tools like Cursor and Claude would let me create high-fidelity interactive prototypes before a single line of production code is written.' }] },
+      { type: 'bold-bullets', items: [{ bold: 'Primary research is worth protecting', text: '— even under launch pressure, the interviews with architects and civil engineers shaped every major decision. I\'d fight harder to preserve that time upfront.' }, { bold: 'AI critique accelerates iteration', text: '— using an AI tool to challenge my layouts in real time saved rounds of internal review. This is now a standard part of my process.' }, { bold: 'Designing with no benchmark is a feature, not a problem', text: '— the absence of a competitor to copy forced genuinely original thinking. The Gitex judges noticed.' }, { bold: 'Next time: prototype with AI before building', text: '— tools like Cursor and Claude would let me create high-fidelity interactive prototypes before a single line of production code is written.' }] },
       { type: 'asset', label: 'Hero Video', image: '/build-africa-phone.png', desc: 'Full journey — dimensions in, 2D and 3D generated, cost estimate reviewed.' },
     ],
   },
@@ -1878,7 +1878,7 @@ const ProjectPage = ({ projectKey, onClose, onOpenProject }: { projectKey: strin
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 40 }}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed inset-0 z-[500] overflow-y-auto bg-[#fefcfa]"
+      className="project-page-content fixed inset-0 z-[500] overflow-y-auto bg-[#fefcfa]"
     >
       {/* Back to projects overview */}
       <button
@@ -2019,7 +2019,7 @@ const ProjectPage = ({ projectKey, onClose, onOpenProject }: { projectKey: strin
 
             {/* ASSET — Build Africa AI Cost Estimation — grey device frame */}
             {section.type === 'asset' && section.label === 'Cost Estimation Screen' && projectKey === 'Build Africa AI' && (
-              <div className="w-full flex flex-col items-center py-10 px-8" style={{ background: '#0a0a0a' }}>
+              <div className="w-full flex flex-col items-center py-10 px-8" style={{ background: '#000000' }}>
                 <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                   <img src={section.image} alt={section.label} className="w-full h-auto object-cover cursor-zoom-in" draggable={false} onClick={() => setZoomedImg(section.image!)} />
                 </div>
@@ -2031,7 +2031,7 @@ const ProjectPage = ({ projectKey, onClose, onOpenProject }: { projectKey: strin
 
             {/* ASSET — Build Africa AI screen shots — dark device frame */}
             {section.type === 'asset' && section.image && (section.label === '🎨 Strategy Architecture' || section.label === 'Interaction Demo') && projectKey === 'Build Africa AI' && (
-              <div className="w-full flex flex-col items-center py-10 px-8" style={{ background: '#0a0a0a' }}>
+              <div className="w-full flex flex-col items-center py-10 px-8" style={{ background: '#000000' }}>
                 <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                   <img src={section.image} alt={section.label} className="w-full h-auto object-cover cursor-zoom-in" draggable={false} onClick={() => setZoomedImg(section.image!)} />
                 </div>
@@ -2137,7 +2137,7 @@ const ProjectPage = ({ projectKey, onClose, onOpenProject }: { projectKey: strin
 
             {/* ASSET — Build Africa AI Final Product Showcase */}
             {section.type === 'asset' && section.image && section.label === 'Final Product Showcase' && projectKey === 'Build Africa AI' && (
-              <div className="w-full flex flex-col items-center py-10 px-8" style={{ background: '#060d07' }}>
+              <div className="w-full flex flex-col items-center py-10 px-8" style={{ background: '#000000' }}>
                 <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                   <img src={section.image} alt="Build Africa AI Mockup" className="w-full h-auto object-cover cursor-zoom-in" draggable={false} onClick={() => setZoomedImg(section.image!)} />
                 </div>
@@ -2149,7 +2149,7 @@ const ProjectPage = ({ projectKey, onClose, onOpenProject }: { projectKey: strin
 
             {/* ASSET — Build Africa AI Hero Video — phone mockup */}
             {section.type === 'asset' && section.image && section.label === 'Hero Video' && projectKey === 'Build Africa AI' && (
-              <div className="w-full flex flex-col items-center py-12 px-8" style={{ background: '#060d07' }}>
+              <div className="w-full flex flex-col items-center py-12 px-8" style={{ background: '#000000' }}>
                 <div className="w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl border border-white/10">
                   <img src={section.image} alt="Build Africa AI on mobile" className="w-full h-auto object-cover cursor-zoom-in" draggable={false} onClick={() => setZoomedImg(section.image!)} />
                 </div>
@@ -2536,6 +2536,7 @@ const MagicButterfly = ({ ready, isHomePage, isReadingPage }: { ready: boolean; 
   // Direction-facing rotation
   const bRot = useMotionValue(0);
   const smoothRot = useSpring(bRot, { stiffness: 60, damping: 16 });
+  const bOpacity = useMotionValue(0);
 
   const clearTimer = () => { if (timerRef.current) clearTimeout(timerRef.current); };
 
@@ -2577,6 +2578,7 @@ const MagicButterfly = ({ ready, isHomePage, isReadingPage }: { ready: boolean; 
   // Only start flying once the welcome intro has fully finished
   useEffect(() => {
     if (!ready) return;
+    animate(bOpacity, 1, { duration: 0.6 });
     const t = setTimeout(() => {
       const p = PERCHES[0];
       doFlyTo(p.xPct * window.innerWidth, p.yPct * window.innerHeight, () => {
@@ -2587,29 +2589,34 @@ const MagicButterfly = ({ ready, isHomePage, isReadingPage }: { ready: boolean; 
       });
     }, 700);
     return () => { clearTimeout(t); clearTimer(); };
-  }, [ready, doFlyTo, scheduleNext, bRot]);
+  }, [ready, doFlyTo, scheduleNext, bRot, bOpacity]);
 
-  // Reset gone state when returning to homepage
-  useEffect(() => { if (isHomePage) setGone(false); }, [isHomePage]);
-
-  // When entering a reading page (About / case study), fly to a quiet companion
-  // perch near the top of the content and stop flying around
+  // Reset gone state and opacity when returning to homepage
   useEffect(() => {
-    if (!ready) return;
-    if (isReadingPage) {
-      clearTimer();
+    if (isHomePage) {
       setGone(false);
-      doFlyTo(
-        window.innerWidth * 0.88,
-        window.innerHeight * 0.14,
-        () => {
-          setPhase('perching');
-          animate(bRot, 0, { duration: 1.2, ease: 'easeInOut' });
-          // stay — no scheduleNext so it perches quietly
-        }
-      );
+      animate(bOpacity, 1, { duration: 0.4 });
     }
-  }, [isReadingPage, ready, doFlyTo, bRot]);
+  }, [isHomePage, bOpacity]);
+
+  // When entering a reading page (About / case study), quietly appear on the
+  // right side near the hero title and stay there as the user scrolls
+  useEffect(() => {
+    if (!ready || !isReadingPage) return;
+    clearTimer();
+    setGone(false);
+
+    // Fade out, snap to right-side position, fade back in
+    animate(bOpacity, 0, { duration: 0.25, ease: 'easeOut' }).then(() => {
+      bX.set(window.innerWidth * 0.88);
+      bY.set(window.innerHeight * 0.18);
+      bRot.set(0);
+      setPhase('perching');
+      animate(bOpacity, 0.85, { duration: 0.45, ease: 'easeIn' });
+    });
+
+    return () => clearTimer();
+  }, [isReadingPage, ready, bOpacity, bX, bY, bRot]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -2660,10 +2667,10 @@ const MagicButterfly = ({ ready, isHomePage, isReadingPage }: { ready: boolean; 
             filter: isReadingPage
               ? 'drop-shadow(0 2px 10px rgba(84,19,136,.25))'
               : 'drop-shadow(0 4px 18px rgba(14,165,233,.5))',
-            opacity: isReadingPage ? 0.85 : 1,
+            opacity: bOpacity,
           }}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: isReadingPage ? 0.75 : 1, opacity: isReadingPage ? 0.85 : 1 }}
+          initial={{ scale: 0 }}
+          animate={{ scale: isReadingPage ? 0.75 : 1 }}
           whileHover={{ scale: isReadingPage ? 0.88 : 1.18, filter: 'drop-shadow(0 6px 24px rgba(84,19,136,.5))' }}
           onClick={handleClick}
         >
@@ -2772,10 +2779,10 @@ const MobileLayout = ({
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
             <PaperClip />
           </div>
-          <div className="bg-[#fdfbf7] border border-[#e8e0d5] shadow-md rounded-sm flex flex-col items-center p-3" style={{ width: '190px' }}>
+          <div className="bg-[#fefefe] border border-[#e8e0d5] shadow-md rounded-sm flex flex-col items-center p-2.5" style={{ width: '172px' }}>
             <div className="flex items-center justify-center mb-1">
-              <div className="bg-white p-1 pb-4 shadow-md border border-black/5 rotate-[2deg]">
-                <img src="/mowa.jpeg" alt="Mowa Otun" className="w-28 h-28 object-cover object-center" draggable={false} referrerPolicy="no-referrer" />
+              <div className="bg-white p-1 pb-3 shadow-md border border-black/5 rotate-[2deg]">
+                <img src="/mowa.jpeg" alt="Mowa Otun" className="w-[100px] h-[100px] object-cover object-center" draggable={false} referrerPolicy="no-referrer" />
               </div>
             </div>
             <div className="w-full mt-2">
@@ -2789,7 +2796,7 @@ const MobileLayout = ({
 
       {/* Hero text */}
       <div className="text-center px-6 pt-5 pb-10">
-        <h1 className="font-gelica text-[3.2rem] tracking-tight leading-[0.95]">
+        <h1 className="font-gelica text-[3.7rem] tracking-tight leading-[0.95]">
           <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Super</span>
           <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Product</span>
           <span className="text-plum italic font-black block" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.12), 0px 6px 24px rgba(84,19,136,0.10)' }}>Designer.</span>
@@ -2859,7 +2866,7 @@ const MobileLayout = ({
           <p className="font-mono text-[9px] uppercase tracking-widest text-ink/35">Reviews</p>
           <div className="flex-1 h-px bg-black/8" />
         </div>
-        <div className="relative cursor-pointer" onClick={() => { playSound('soft'); setReviewIndex(i => (i + 1) % reviews.length); }} style={{ width: '280px', height: '240px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="relative cursor-pointer" onClick={() => { playSound('soft'); setReviewIndex(i => (i + 1) % reviews.length); }} style={{ width: '100%', height: '240px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {[0, 1, 2].map((offset) => {
               const idx = (reviewIndex + offset) % reviews.length;
               const isTop = offset === 0;
@@ -2874,7 +2881,7 @@ const MobileLayout = ({
                     zIndex: 2 - offset,
                   }}
                   transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-                  className="absolute w-[272px] bg-white border border-black/7 shadow-[0_8px_20px_rgba(0,0,0,0.09)] p-4 select-none"
+                  className="absolute w-full bg-white border border-black/7 shadow-[0_8px_20px_rgba(0,0,0,0.09)] p-4 select-none"
                   style={{ pointerEvents: isTop ? 'auto' : 'none' }}
                 >
                   {/* Washi tape */}
@@ -3018,9 +3025,6 @@ export default function App() {
       ) : (
       <motion.div
         ref={canvasRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
         className="desktop-custom-cursor w-full h-screen relative overflow-hidden bg-[#FFFEFD] selection:bg-lilac selection:text-plum"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect x='0' y='0' width='100' height='100' fill='%23FFFEFD' fill-opacity='1'/%3E%3Crect x='100' y='100' width='100' height='100' fill='%23FFFEFD' fill-opacity='1'/%3E%3Crect x='100' y='0' width='100' height='100' fill='%23F9FBFD' fill-opacity='1'/%3E%3Crect x='0' y='100' width='100' height='100' fill='%23F9FBFD' fill-opacity='1'/%3E%3C/svg%3E")`,
