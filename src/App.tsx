@@ -184,7 +184,7 @@ const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact =
           style={{ top: '245px', right: '-55px', transform: 'rotate(-6deg)', transformOrigin: 'center bottom', zIndex: 20 }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: delay + 0.5, duration: 1.0, ease: 'easeOut' }}
+          transition={{ delay: 0.4, duration: 1.0, ease: 'easeOut' }}
         >
           <svg width="78" height="122" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 5 }}>
             <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" {...sw} />
@@ -879,7 +879,7 @@ const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpen
           style={{ top: '230px', left: '8px', transform: 'rotate(-4deg)', transformOrigin: 'center center', zIndex: 20 }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: delay + 0.8, duration: 1.0, ease: 'easeOut' }}
+          transition={{ delay: 0.6, duration: 1.0, ease: 'easeOut' }}
         >
           <svg width="78" height="122" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 5 }}>
             <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" stroke="#b0a8b0" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 3.5" fill="none" />
