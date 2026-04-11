@@ -355,7 +355,7 @@ const ReviewsModal = ({ onClose, initialIndex = 0 }: { onClose: () => void; init
       <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" />
 
       <motion.div
-        className="relative z-10 w-full max-w-lg bg-[#fefcfa] rounded-2xl shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-lg bg-[#fffefd] rounded-2xl shadow-2xl overflow-hidden"
         initial={{ y: 32, scale: 0.97 }}
         animate={{ y: 0, scale: 1 }}
         exit={{ y: 32, scale: 0.97 }}
@@ -881,7 +881,7 @@ const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpen
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 1.0, ease: 'easeOut' }}
         >
-          <svg width="78" height="122" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 5 }}>
+          <svg width="50" height="78" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 5, transform: 'scaleX(-1)' }}>
             <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" stroke="#b0a8b0" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 3.5" fill="none" />
             <path d="M 2 17 L 8 8 L 17 13" stroke="#b0a8b0" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" fill="none" />
           </svg>
@@ -1176,7 +1176,7 @@ const AboutPage = ({ onClose }: { onClose: () => void }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 40 }}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed inset-0 z-[500] overflow-y-auto bg-[#fefcfa]"
+      className="fixed inset-0 z-[500] overflow-y-auto bg-[#fffefd]"
     >
       <button
         onClick={onClose}
@@ -1384,7 +1384,7 @@ const ProjectsOverviewPage = ({ onClose, onSelectProject }: { onClose: () => voi
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 40 }}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed inset-0 z-[500] overflow-y-auto bg-[#fefcfa]"
+      className="fixed inset-0 z-[500] overflow-y-auto bg-[#fffefd]"
     >
       <button
         onClick={onClose}
@@ -1878,7 +1878,7 @@ const ProjectPage = ({ projectKey, onClose, onOpenProject }: { projectKey: strin
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 40 }}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="project-page-content fixed inset-0 z-[500] overflow-y-auto bg-[#fefcfa]"
+      className="project-page-content fixed inset-0 z-[500] overflow-y-auto bg-[#fffefd]"
     >
       {/* Back to projects overview */}
       <button
@@ -2722,7 +2722,7 @@ const MobileLayout = ({
 
   return (
     <div
-      className="w-full min-h-screen bg-[#fefcfa]"
+      className="w-full min-h-screen bg-[#fffefd]"
       style={{ backgroundImage: bgPattern, backgroundSize: '200px 200px' }}
     >
       {/* ── Welcome intro butterflies — fly across before content appears ── */}
