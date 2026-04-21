@@ -4,6 +4,7 @@ import { Quote, Mail, Linkedin, FileText } from 'lucide-react';
 import claudeLogo from '../Image/Claude.png';
 import cursorLogo from '../Image/Cursor.png';
 import figmaLogo from '../Image/fIGMA.png';
+import { SparklesText } from './components/ui/sparkles-text';
 
 // ─── Card sound effects (Web Audio API) ───────────────────────────────────────
 const playSound = (type: 'folder' | 'flip' | 'review' | 'envelope' | 'note' | 'soft') => {
@@ -115,20 +116,8 @@ const PaperClip = () => (
 
 
 // Flip Card – replaces IDCard
-const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact = false, onOpenAbout, constraintsRef, showAnnotation = false }: any) => {
-  useEffect(() => {
-    if (!showAnnotation) return;
-    const id = 'caveat-font';
-    if (document.getElementById(id)) return;
-    const link = document.createElement('link');
-    link.id = id; link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap';
-    document.head.appendChild(link);
-  }, [showAnnotation]);
-
-  const arrowColor = '#b0a8b0';
-  const sw = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, strokeDasharray: '5 3.5', fill: 'none' };
-  const tip = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
+const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact = false, onOpenAbout, constraintsRef }: any) => {
+  const wasDragged = useRef(false);
 
   return (
     <motion.div
@@ -140,12 +129,14 @@ const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact =
       drag
       dragConstraints={constraintsRef}
       dragElastic={0.15}
-      dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
+      dragTransition={{ power: 0.18, timeConstant: 180, bounceStiffness: 300, bounceDamping: 25 }}
+      onDragStart={() => { wasDragged.current = false; }}
+      onDrag={(_, info) => { if (Math.abs(info.offset.x) > 5 || Math.abs(info.offset.y) > 5) wasDragged.current = true; }}
       className={`absolute cursor-grab active:cursor-grabbing ${className}`}
       style={{ zIndex }}
       onMouseEnter={() => { setCursorText('About me'); playSound('soft'); }}
       onMouseLeave={() => setCursorText('')}
-      onTap={() => { playSound('flip'); onOpenAbout?.(); }}
+      onTap={() => { if (wasDragged.current) return; playSound('flip'); onOpenAbout?.(); }}
     >
       {/* Paper clip pinned at top */}
       <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
@@ -182,22 +173,6 @@ const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact =
           </div>
       </div>
 
-      {/* "Hi, this is me" annotation — anchored below-right of card, travels with it */}
-      {showAnnotation && (
-        <motion.div
-          className="absolute pointer-events-none select-none"
-          style={{ top: '245px', right: '-55px', transform: 'rotate(-6deg)', transformOrigin: 'center bottom', zIndex: 20 }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 1.0, ease: 'easeOut' }}
-        >
-          <svg width="78" height="122" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 5 }}>
-            <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" {...sw} />
-            <path d="M 2 17 L 8 8 L 17 13" {...tip} />
-          </svg>
-          <span style={{ fontFamily: "'Caveat', cursive", fontSize: '19px', color: '#111', display: 'block', lineHeight: 1.2, whiteSpace: 'nowrap', userSelect: 'none' }}>Hi, this is me ✨</span>
-        </motion.div>
-      )}
     </motion.div>
   );
 };
@@ -235,73 +210,123 @@ const REVIEW_TAPE_STYLE = {
   background: 'rgba(218,191,255,0.82)',
 };
 
-const ReviewCardFace = ({
-  review,
-  compact = false,
-  isTop = false,
-  isHovered = false,
-  onReadFull,
-}: {
-  review: any;
-  compact?: boolean;
-  isTop?: boolean;
-  isHovered?: boolean;
-  onReadFull?: () => void;
-}) => (
-  <div className={`${compact ? 'w-56' : 'w-[250px]'} bg-[#fdfcfa] border border-black/7 shadow-[0_8px_20px_rgba(0,0,0,0.09)] relative select-none`}>
-    <div
-      className={`pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 ${compact ? 'w-16 h-4' : 'w-[68px] h-4'} rounded-[2px] shadow-sm z-10`}
-      style={{
-        ...REVIEW_TAPE_STYLE,
-        transform: `translateX(-50%) rotate(${isTop && isHovered ? '0deg' : review.tapeRotate})`,
-        opacity: 0.88,
-      }}
-    />
+const STICKY_COLORS = ['#fef3a2', '#fbcfe8', '#bfdbfe'];
 
-    <div className={`${compact ? 'p-3 pt-5 gap-3' : 'p-[18px] pt-6 gap-[14px]'} flex flex-col`}>
-      <span className="pointer-events-none font-mono text-[6.5px] uppercase tracking-[0.22em] text-ink/28">REVIEW</span>
-
-      <p
-        className={`pointer-events-none ${compact ? 'text-[11px]' : 'text-[11.5px]'} font-satoshi italic text-ink/70 leading-[1.68]`}
-        style={{ display: '-webkit-box', WebkitLineClamp: compact ? 3 : 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}
-      >
-        "{review.quote}"
-      </p>
-
-      <div className="pointer-events-none h-px bg-black/8" />
-
-      <div className="pointer-events-none flex items-center gap-2.5">
-        <div
-          className={`bg-white ${compact ? 'p-[3px] pb-[9px]' : 'p-[3px] pb-[10px]'} shadow-[0_2px_6px_rgba(0,0,0,0.12)] border border-black/6 shrink-0`}
-          style={{ transform: `rotate(${review.photoRotate})` }}
+const StickyReviewBody = ({ review, compact, zoom = false }: { review: any; compact: boolean; zoom?: boolean }) => {
+  const photoSize = zoom ? 72 : compact ? 40 : 48;
+  const heightClass = zoom ? 'min-h-full' : 'h-full';
+  return (
+    <>
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.04) 100%)' }}
+      />
+      <div className={`relative z-10 flex flex-col ${heightClass} ${zoom ? 'p-8 sm:p-10' : compact ? 'p-3' : 'p-4'}`}>
+        <Quote size={zoom ? 26 : compact ? 13 : 15} className="text-ink/35 shrink-0 pointer-events-none" />
+        <p
+          className={`pointer-events-none select-none font-satoshi italic text-ink/80 mt-2 ${zoom ? 'text-[16px] sm:text-[17px] leading-[1.65]' : compact ? 'text-[10.5px] leading-[1.5]' : 'text-[12px] leading-[1.55]'}`}
+          style={zoom
+            ? undefined
+            : ({ display: '-webkit-box', WebkitLineClamp: compact ? 5 : 6, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties)}
         >
-          <img
-            src={review.photoSrc}
-            alt={review.author}
-            className={`${compact ? 'w-8 h-8' : 'w-9 h-9'} object-cover block`}
-            draggable={false}
-            referrerPolicy="no-referrer"
-          />
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <span className={`${compact ? 'text-[11px]' : 'text-[11.5px]'} font-satoshi font-bold text-plum leading-tight`}>
-            {review.author}
-          </span>
-          <span className="font-satoshi text-[8.5px] text-ink/45 leading-tight">{review.role}</span>
+          "{review.quote}"
+        </p>
+        <div className={`flex items-end justify-between gap-3 ${zoom ? 'mt-8' : 'mt-auto pt-2'}`}>
+          <div className="pointer-events-none select-none min-w-0 flex-1">
+            <p
+              className={`${zoom ? 'text-[32px]' : compact ? 'text-[15px]' : 'text-[18px]'} text-ink/90 leading-tight truncate`}
+              style={{ fontFamily: "'Caveat', cursive" }}
+            >
+              — {review.author}
+            </p>
+            <p className={`font-satoshi ${zoom ? 'text-[12px]' : compact ? 'text-[8px]' : 'text-[9px]'} text-ink/55 leading-tight mt-0.5 truncate`}>
+              {review.role}
+            </p>
+          </div>
+          <div
+            className="bg-white shadow-[0_3px_10px_rgba(0,0,0,0.22)] border border-black/10 shrink-0 pointer-events-none"
+            style={{
+              padding: zoom ? '4px 4px 12px 4px' : '2px 2px 7px 2px',
+              transform: `rotate(${review.photoRotate})`,
+            }}
+          >
+            <img
+              src={review.photoSrc}
+              alt={review.author}
+              draggable={false}
+              referrerPolicy="no-referrer"
+              className="object-cover block"
+              style={{ width: photoSize, height: photoSize }}
+            />
+          </div>
         </div>
       </div>
+    </>
+  );
+};
 
-      {isTop && (
-        <button
-          className={`pointer-events-auto font-mono text-[6.5px] uppercase tracking-[0.14em] text-plum/45 hover:text-plum/70 transition-all duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'} text-left`}
-          onClick={(e) => { e.stopPropagation(); onReadFull?.(); }}
-        >
-          read full →
-        </button>
-      )}
-    </div>
-  </div>
-);
+const StickyReview = ({
+  review,
+  index,
+  color,
+  initial,
+  zIndex,
+  delay,
+  compact,
+  constraintsRef,
+  setCursorText,
+  onOpen,
+}: any) => {
+  const width = compact ? 240 : 290;
+  const height = compact ? 180 : 200;
+  const pressPos = useRef<{ x: number; y: number; t: number } | null>(null);
+  const isDragging = useRef(false);
+
+  const openIfTap = (clientX: number, clientY: number) => {
+    const p = pressPos.current;
+    pressPos.current = null;
+    if (isDragging.current) return;
+    if (!p) {
+      playSound('note');
+      onOpen(index);
+      return;
+    }
+    const dx = clientX - p.x;
+    const dy = clientY - p.y;
+    if (Math.sqrt(dx * dx + dy * dy) > 8 || Date.now() - p.t > 600) return;
+    playSound('note');
+    onOpen(index);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: initial.y + 24, x: initial.x, scale: 0.92, rotate: initial.rotate - 4 }}
+      animate={{ opacity: 1, y: initial.y, x: initial.x, scale: 1, rotate: initial.rotate }}
+      transition={{ delay, duration: 1.0, type: 'spring', stiffness: 110, damping: 18 }}
+      whileHover={{ scale: 1.04, zIndex: 120, transition: { duration: 0.15 } }}
+      whileDrag={{ scale: 1.03, zIndex: 200 }}
+      drag
+      dragConstraints={constraintsRef}
+      dragElastic={0.15}
+      dragMomentum={false}
+      onDragStart={() => { isDragging.current = true; }}
+      onDragEnd={() => {
+        window.setTimeout(() => { isDragging.current = false; }, 30);
+      }}
+      onPointerDown={(e) => {
+        isDragging.current = false;
+        pressPos.current = { x: e.clientX, y: e.clientY, t: Date.now() };
+      }}
+      onClick={(e) => openIfTap(e.clientX, e.clientY)}
+      onMouseEnter={() => setCursorText?.('Read')}
+      onMouseLeave={() => setCursorText?.('')}
+      className="absolute top-0 left-0 cursor-grab active:cursor-grabbing shadow-[0_8px_22px_rgba(0,0,0,0.14)]"
+      style={{ width, height, backgroundColor: color, zIndex }}
+    >
+      <StickyReviewBody review={review} compact={compact} />
+    </motion.div>
+  );
+};
 
 const reviews = [
   {
@@ -331,22 +356,8 @@ const reviews = [
 ];
 
 const ReviewsModal = ({ onClose, initialIndex = 0 }: { onClose: () => void; initialIndex?: number }) => {
-  const [activeIndex, setActiveIndex] = useState(initialIndex);
-  const [direction, setDirection] = useState(1);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const goTo = (idx: number) => {
-    setDirection(idx > activeIndex ? 1 : -1);
-    setActiveIndex(idx);
-  };
-  const prev = () => goTo((activeIndex - 1 + reviews.length) % reviews.length);
-  const next = () => goTo((activeIndex + 1) % reviews.length);
-
-  const review = reviews[activeIndex];
+  const review = reviews[initialIndex];
+  const color = STICKY_COLORS[initialIndex % STICKY_COLORS.length];
 
   return (
     <motion.div
@@ -360,110 +371,30 @@ const ReviewsModal = ({ onClose, initialIndex = 0 }: { onClose: () => void; init
       <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" />
 
       <motion.div
-        className="relative z-10 w-full max-w-lg bg-[#fffefd] rounded-2xl shadow-2xl overflow-hidden"
-        initial={{ y: 32, scale: 0.97 }}
-        animate={{ y: 0, scale: 1 }}
-        exit={{ y: 32, scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+        className="relative z-10 shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+        style={{
+          width: 'min(620px, 92vw)',
+          minHeight: 'min(calc(min(620px, 92vw) * 20 / 29), 86vh)',
+          maxHeight: '86vh',
+          backgroundColor: color,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        initial={{ y: 20, scale: 0.88, opacity: 0, rotate: -2 }}
+        animate={{ y: 0, scale: 1, opacity: 1, rotate: 0 }}
+        exit={{ y: 10, scale: 0.92, opacity: 0, rotate: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 26 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-black/6">
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-widest text-plum/50 mb-1">Kind words</p>
-            <h2 className="font-gelica text-2xl text-ink font-semibold">What people say</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full border border-black/10 flex items-center justify-center text-ink/40 hover:text-ink hover:border-ink/30 transition-all cursor-pointer font-satoshi text-lg leading-none"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Card area */}
-        <div className="px-8 pt-8 pb-4 overflow-hidden">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={activeIndex}
-              custom={direction}
-              variants={{
-                enter: (d: number) => ({ x: d * 60, opacity: 0 }),
-                center: { x: 0, opacity: 1 },
-                exit: (d: number) => ({ x: d * -60, opacity: 0 }),
-              }}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-              className="flex flex-col gap-5"
-            >
-              {/* Tape */}
-              <div className="flex justify-center">
-                <div
-                  className="w-16 h-4 rounded-[2px]"
-                  style={{ ...REVIEW_TAPE_STYLE, transform: `rotate(${review.tapeRotate})`, opacity: 0.88 }}
-                />
-              </div>
-
-              {/* Quote */}
-              <p className="font-satoshi text-sm text-ink/75 italic leading-relaxed">
-                "{review.quote}"
-              </p>
-
-              <div className="h-px bg-black/7" />
-
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <div
-                  className="bg-white p-[3px] pb-[10px] shadow-[0_2px_6px_rgba(0,0,0,0.12)] border border-black/6 shrink-0"
-                  style={{ transform: `rotate(${review.photoRotate})` }}
-                >
-                  <img
-                    src={review.photoSrc}
-                    alt={review.author}
-                    className="w-12 h-12 object-cover block"
-                    draggable={false}
-                  />
-                </div>
-                <div>
-                  <p className="font-satoshi text-sm font-bold text-plum leading-tight">{review.author}</p>
-                  <p className="font-satoshi text-[10px] text-ink/45 leading-tight mt-0.5">{review.role}</p>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Nav + dots */}
-        <div className="flex items-center justify-between px-8 pb-7 pt-2">
-          <button
-            onClick={prev}
-            className="w-8 h-8 rounded-full border border-black/10 flex items-center justify-center text-ink/40 hover:text-ink hover:border-ink/30 transition-all cursor-pointer font-satoshi text-base"
-          >
-            ←
-          </button>
-
-          <div className="flex gap-1.5 items-center">
-            {reviews.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                className={`rounded-full transition-all duration-300 ${
-                  activeIndex === i
-                    ? 'w-3 h-1.5 bg-plum/50'
-                    : 'w-1.5 h-1.5 bg-ink/20 hover:bg-ink/35'
-                }`}
-              />
-            ))}
-          </div>
-
-          <button
-            onClick={next}
-            className="w-8 h-8 rounded-full border border-black/10 flex items-center justify-center text-ink/40 hover:text-ink hover:border-ink/30 transition-all cursor-pointer font-satoshi text-base"
-          >
-            →
-          </button>
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/55 hover:bg-white/85 flex items-center justify-center text-ink/60 hover:text-ink transition-colors text-xl leading-none font-satoshi cursor-pointer"
+        >
+          ×
+        </button>
+        <div className="relative flex-1 min-h-0 overflow-auto">
+          <StickyReviewBody review={review} compact={false} zoom />
         </div>
       </motion.div>
     </motion.div>
@@ -471,133 +402,42 @@ const ReviewsModal = ({ onClose, initialIndex = 0 }: { onClose: () => void; init
 };
 
 const ReviewStack = ({ delay, setCursorText, className, compact = false, constraintsRef, onOpenReviews }: any) => {
-  const [order, setOrder] = useState([0, 1, 2]);
-  const [hovered, setHovered] = useState(false);
-  const [exitingIndex, setExitingIndex] = useState<number | null>(null);
-
-  const layout = compact
+  const initials = compact
     ? [
-        { rotate: 5, x: 10, y: 10, scale: 1, hoverRotate: 7, hoverX: 18, hoverY: 12, hoverScale: 1 },
-        { rotate: -3, x: -5, y: 4, scale: 1, hoverRotate: -7, hoverX: -15, hoverY: 8, hoverScale: 1 },
-        { rotate: 0, x: 0, y: 0, scale: 1, hoverRotate: 1, hoverX: 0, hoverY: -14, hoverScale: 1.06 },
+        { x: -28, y: -22, rotate: -7 },
+        { x: 24, y: -2, rotate: 5 },
+        { x: -6, y: 32, rotate: -2 },
       ]
     : [
-        { rotate: 4.5, x: 8, y: 10, scale: 0.91, hoverRotate: 10, hoverX: 24, hoverY: 14, hoverScale: 0.91 },
-        { rotate: -2.5, x: -3, y: 4, scale: 0.955, hoverRotate: -8, hoverX: -20, hoverY: 10, hoverScale: 0.955 },
-        { rotate: 0, x: 0, y: 0, scale: 1, hoverRotate: 0, hoverX: 0, hoverY: -16, hoverScale: 1.06 },
+        { x: -52, y: -28, rotate: -8 },
+        { x: 36, y: -4, rotate: 6 },
+        { x: -8, y: 38, rotate: -3 },
       ];
 
-  const cycleReviews = () => {
-    if (exitingIndex !== null) return;
-    playSound('review');
-    setExitingIndex(order[2]);
-    window.setTimeout(() => {
-      setOrder(([bottom, middle, top]) => [top, bottom, middle]);
-      setExitingIndex(null);
-    }, 260);
-  };
+  const width = compact ? 240 : 290;
+  const height = compact ? 180 : 200;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
-      className={`absolute cursor-grab active:cursor-grabbing ${className}`}
-      style={{ zIndex: 12, width: compact ? 224 : 250, height: compact ? 212 : 230 }}
-      onMouseEnter={() => { setCursorText('Read reviews'); setHovered(true); playSound('soft'); }}
-      onMouseLeave={() => { setCursorText(''); setHovered(false); }}
-      whileDrag={{ scale: 1.03, zIndex: 100 }}
-      drag
-      dragConstraints={constraintsRef}
-      dragElastic={0.15}
-      dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
-      onTap={() => { cycleReviews(); }}
+    <div
+      className={`absolute ${className}`}
+      style={{ width: width + 50, height: height + 60 }}
     >
-      {order.slice(0, 2).map((reviewIndex, slot) => {
-        const review = reviews[reviewIndex];
-        const card = layout[slot];
-        return (
-          <motion.div
-            key={`${review.author}-${slot}`}
-            className="absolute top-0 left-0"
-            animate={{
-              rotate: hovered ? card.hoverRotate : card.rotate,
-              x: hovered ? card.hoverX : card.x,
-              y: hovered ? card.hoverY : card.y,
-              scale: hovered ? card.hoverScale : card.scale,
-            }}
-            transition={{ type: "spring", stiffness: 260, damping: 24 }}
-            style={{ zIndex: slot + 1 }}
-          >
-            <ReviewCardFace review={review} compact={compact} />
-          </motion.div>
-        );
-      })}
-
-      <AnimatePresence mode="wait">
-        {exitingIndex === null ? (
-          <motion.div
-            key={`top-${order[2]}`}
-            className="absolute top-0 left-0"
-            initial={{ y: -44, rotate: -3, opacity: 0, scale: 0.94 }}
-            animate={{
-              y: hovered ? layout[2].hoverY : layout[2].y,
-              x: hovered ? layout[2].hoverX : layout[2].x,
-              rotate: hovered ? layout[2].hoverRotate : layout[2].rotate,
-              scale: hovered ? layout[2].hoverScale : layout[2].scale,
-              opacity: 1,
-            }}
-            exit={{ y: -75, x: 6, rotate: -14, opacity: 0, scale: 1.06 }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            style={{ zIndex: 6 }}
-          >
-            <ReviewCardFace review={reviews[order[2]]} compact={compact} isTop isHovered={hovered} onReadFull={() => onOpenReviews?.(order[2])} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key={`exiting-${exitingIndex}`}
-            className="absolute top-0 left-0"
-            initial={{
-              y: hovered ? layout[2].hoverY : layout[2].y,
-              x: hovered ? layout[2].hoverX : layout[2].x,
-              rotate: hovered ? layout[2].hoverRotate : layout[2].rotate,
-              scale: hovered ? layout[2].hoverScale : layout[2].scale,
-              opacity: 1,
-            }}
-            animate={{ y: -75, x: 6, rotate: -14, opacity: 0, scale: 1.06 }}
-            transition={{ duration: 0.26, ease: [0.32, 0, 0.67, 0] }}
-            style={{ zIndex: 7 }}
-          >
-            <ReviewCardFace review={reviews[exitingIndex]} compact={compact} isTop isHovered={hovered} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Hover hint label */}
-      <div
-        className={`absolute -bottom-6 left-0 right-0 flex justify-center transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}
-      >
-        <span className="font-mono text-[6.5px] uppercase tracking-[0.18em] text-plum/40">
-          click to cycle →
-        </span>
-      </div>
-
-      {/* Pagination dots */}
-      <div className="absolute -bottom-11 left-0 right-0 flex justify-center gap-1.5">
-        {reviews.map((_, i) => (
-          <div
-            key={i}
-            className={`rounded-full transition-all duration-300 ${
-              order[2] === i
-                ? 'w-3 h-1.5 bg-plum/50'
-                : 'w-1.5 h-1.5 bg-ink/18'
-            }`}
-          />
-        ))}
-      </div>
-
-      <div className={`${compact ? 'w-56 h-52' : 'w-[250px] h-[230px]'} opacity-0 pointer-events-none`} />
-    </motion.div>
+      {reviews.map((review, i) => (
+        <StickyReview
+          key={review.author}
+          review={review}
+          index={i}
+          color={STICKY_COLORS[i % STICKY_COLORS.length]}
+          initial={initials[i]}
+          zIndex={30 + i}
+          delay={delay + i * 0.18}
+          compact={compact}
+          constraintsRef={constraintsRef}
+          setCursorText={setCursorText}
+          onOpen={(idx) => onOpenReviews?.(idx)}
+        />
+      ))}
+    </div>
   );
 };
 
@@ -793,22 +633,9 @@ const FolderContent = ({ title, subtitle, folderColor, tabColor, image, compact 
   </>
 );
 
-const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpenProjects, constraintsRef, showAnnotation = false }: any) => {
+const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpenProjects, constraintsRef }: any) => {
   const [isHovered, setIsHovered] = useState(false);
-
-  useEffect(() => {
-    if (!showAnnotation) return;
-    const id = 'caveat-font';
-    if (document.getElementById(id)) return;
-    const link = document.createElement('link');
-    link.id = id; link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap';
-    document.head.appendChild(link);
-  }, [showAnnotation]);
-
-  const arrowColor = '#b0a8b0';
-  const sw = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, strokeDasharray: '5 3.5', fill: 'none' };
-  const tip = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
+  const wasDragged = useRef(false);
 
   return (
     <motion.div
@@ -824,8 +651,10 @@ const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpen
       drag
       dragConstraints={constraintsRef}
       dragElastic={0.15}
-      dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
-      onTap={onOpenProjects}
+      dragTransition={{ power: 0.18, timeConstant: 180, bounceStiffness: 300, bounceDamping: 25 }}
+      onDragStart={() => { wasDragged.current = false; }}
+      onDrag={(_, info) => { if (Math.abs(info.offset.x) > 5 || Math.abs(info.offset.y) > 5) wasDragged.current = true; }}
+      onTap={() => { if (wasDragged.current) return; onOpenProjects?.(); }}
     >
       {/* Bottom Folder (Light Brown) */}
       <motion.div
@@ -887,27 +716,13 @@ const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpen
         />
       </motion.div>
 
-      {/* "selected projects" annotation — anchored below stack, travels with it */}
-      {showAnnotation && (
-        <motion.div
-          className="absolute pointer-events-none select-none"
-          style={{ top: '230px', left: '8px', transform: 'rotate(-4deg)', transformOrigin: 'center center', zIndex: 20 }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 1.0, ease: 'easeOut' }}
-        >
-          <svg width="50" height="78" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 5, transform: 'scaleX(-1)' }}>
-            <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" stroke="#b0a8b0" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 3.5" fill="none" />
-            <path d="M 2 17 L 8 8 L 17 13" stroke="#b0a8b0" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          </svg>
-          <span style={{ fontFamily: "'Caveat', cursive", fontSize: '19px', color: '#111', display: 'block', lineHeight: 1.2, whiteSpace: 'nowrap', userSelect: 'none' }}>selected projects</span>
-        </motion.div>
-      )}
     </motion.div>
   );
 };
 
-const ContactEnvelope = ({ delay, setCursorText, className, rotation = 0, zIndex = 10, compact = false, constraintsRef }: any) => (
+const ContactEnvelope = ({ delay, setCursorText, className, rotation = 0, zIndex = 10, compact = false, constraintsRef }: any) => {
+  const wasDragged = useRef(false);
+  return (
   <motion.div
     initial={{ opacity: 0, scale: 0.9, rotate: rotation - 10 }}
     animate={{ opacity: 1, scale: 1, rotate: rotation }}
@@ -917,7 +732,10 @@ const ContactEnvelope = ({ delay, setCursorText, className, rotation = 0, zIndex
     drag
     dragConstraints={constraintsRef}
     dragElastic={0.15}
-    dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
+    dragTransition={{ power: 0.18, timeConstant: 180, bounceStiffness: 300, bounceDamping: 25 }}
+    onDragStart={() => { wasDragged.current = false; }}
+    onDrag={(_, info) => { if (Math.abs(info.offset.x) > 5 || Math.abs(info.offset.y) > 5) wasDragged.current = true; }}
+    onClickCapture={(e) => { if (wasDragged.current) { e.preventDefault(); e.stopPropagation(); } }}
     className={`absolute cursor-grab active:cursor-grabbing ${className}`}
     style={{ zIndex }}
     onMouseEnter={() => { setCursorText('Contact'); playSound('envelope'); }}
@@ -990,7 +808,8 @@ const ContactEnvelope = ({ delay, setCursorText, className, rotation = 0, zIndex
       </div>
     </div>
   </motion.div>
-);
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PATH BUTTERFLY — decorative 🦋 that floats gently at a fixed canvas position
@@ -1058,7 +877,7 @@ const ScribbleAnnotations = ({ show, compact = false }: { show: boolean; compact
     <>
       {/* ── "Hi, this is me" — below-right of FlipCard, curly arrow points UP toward card ── */}
       <motion.div
-        className="absolute pointer-events-none select-none"
+        className="absolute pointer-events-none select-none motion-hidden-until-ready"
         style={{ top: '37%', right: '7%', zIndex: 20, transform: 'rotate(-6deg)', transformOrigin: 'center bottom' }}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1076,7 +895,7 @@ const ScribbleAnnotations = ({ show, compact = false }: { show: boolean; compact
 
       {/* ── "selected projects" — right of ProjectStack, curly arrow points LEFT toward stack ── */}
       <motion.div
-        className="absolute pointer-events-none select-none"
+        className="absolute pointer-events-none select-none motion-hidden-until-ready"
         style={{ top: '34%', left: '12%', zIndex: 20, transform: 'rotate(-4deg)', transformOrigin: 'center center' }}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -2717,28 +2536,21 @@ const MobileLayout = ({
   onOpenAbout,
   onSelectProject,
   onOpenReviews,
+  showTitle,
+  showContent,
 }: {
   onOpenAbout: () => void;
   onSelectProject: (key: string) => void;
   onOpenReviews?: (idx: number) => void;
+  showTitle: boolean;
+  showContent: boolean;
 }) => {
-  const [reviewIndex, setReviewIndex] = useState(0);
   const bgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect x='0' y='0' width='100' height='100' fill='%23FFFEFD' fill-opacity='1'/%3E%3Crect x='100' y='100' width='100' height='100' fill='%23FFFEFD' fill-opacity='1'/%3E%3Crect x='100' y='0' width='100' height='100' fill='%23F9FBFD' fill-opacity='1'/%3E%3Crect x='0' y='100' width='100' height='100' fill='%23F9FBFD' fill-opacity='1'/%3E%3C/svg%3E")`;
   const folderTabColors = ['bg-[#fbcfe8]', 'bg-[#c7d2fe]', 'bg-[#e8d5b5]'];
   const folderBodyColors = ['bg-[#fce7f3]', 'bg-[#e0e7ff]', 'bg-[#f4e4c4]'];
   const arrowColor = '#b0a89e';
   const sw = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, strokeDasharray: '5 3.5', fill: 'none' };
   const tip = { stroke: arrowColor, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
-
-  // Load Caveat font for handwriting
-  useEffect(() => {
-    const id = 'caveat-font';
-    if (document.getElementById(id)) return;
-    const link = document.createElement('link');
-    link.id = id; link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap';
-    document.head.appendChild(link);
-  }, []);
 
   return (
     <div
@@ -2750,8 +2562,28 @@ const MobileLayout = ({
       <motion.div className="fixed top-0 left-0 drop-shadow-md z-[790] pointer-events-none" initial={{ opacity: 0, x: '30vw', y: '70vh', rotate: 15, scale: 0.6 }} animate={{ opacity: [0, 0.8, 0.8, 0], x: ['30vw', '20vw', '40vw', '10vw'], y: ['70vh', '50vh', '30vh', '10vh'], rotate: [15, -10, 5, 25], scale: [0.6, 1, 0.9, 0.7] }} transition={{ duration: 2.2, times: [0, 0.2, 0.6, 1], ease: 'easeInOut', delay: 0.8 }}><img src="/about/butterfly.png" alt="" className="w-14 h-14 object-contain" draggable={false} /></motion.div>
       <motion.div className="fixed top-0 left-0 drop-shadow-md z-[790] pointer-events-none" initial={{ opacity: 0, x: '70vw', y: '60vh', rotate: -10, scale: 0.5 }} animate={{ opacity: [0, 0.7, 0.7, 0], x: ['70vw', '60vw', '75vw', '90vw'], y: ['60vh', '40vh', '20vh', '0vh'], rotate: [-10, 15, -5, 20], scale: [0.5, 0.8, 0.7, 0.6] }} transition={{ duration: 2.0, times: [0, 0.3, 0.7, 1], ease: 'easeInOut', delay: 1.0 }}><img src="/about/butterfly.png" alt="" className="w-12 h-12 object-contain" draggable={false} /></motion.div>
 
-      {/* Main content — fades in after butterfly intro */}
-      <motion.div className="w-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5, duration: 0.8 }}>
+      {/* Header/title — phase 2, appears after butterflies */}
+      {showTitle && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="text-center px-6 pt-20 pb-6"
+        >
+          <h1 className="font-gelica text-[3.7rem] tracking-tight leading-[0.95]">
+            <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Super</span>
+            <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Product</span>
+            <span className="text-plum italic font-black block" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.12), 0px 6px 24px rgba(84,19,136,0.10)' }}>Designer.</span>
+          </h1>
+          <p className="font-satoshi text-ink/70 mt-4 text-sm leading-relaxed max-w-[230px] mx-auto">
+            A curated collection of thoughts,<br /> work, and design thinking.
+          </p>
+        </motion.div>
+      )}
+
+      {/* Main content — phase 3, appears after title */}
+      {showContent && (
+      <motion.div className="w-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
 
       {/* Floating butterfly — fixed, drifts on left side */}
       <PathButterfly className="fixed bottom-[20%] left-[6%]" driftX={6} driftY={3} delay={0.9} size="text-lg" />
@@ -2768,7 +2600,7 @@ const MobileLayout = ({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.8 }}
-          className="absolute bottom-4 right-3 pointer-events-none select-none z-10"
+          className="absolute bottom-4 right-3 pointer-events-none select-none z-10 motion-hidden-until-ready"
           style={{ transform: 'rotate(-5deg)' }}
         >
           <svg width="52" height="80" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 3 }}>
@@ -2812,18 +2644,6 @@ const MobileLayout = ({
             </div>
           </div>
         </motion.div>
-      </div>
-
-      {/* Hero text */}
-      <div className="text-center px-6 pt-5 pb-10">
-        <h1 className="font-gelica text-[3.7rem] tracking-tight leading-[0.95]">
-          <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Super</span>
-          <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Product</span>
-          <span className="text-plum italic font-black block" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.12), 0px 6px 24px rgba(84,19,136,0.10)' }}>Designer.</span>
-        </h1>
-        <p className="font-satoshi text-ink/70 mt-4 text-sm leading-relaxed max-w-[230px] mx-auto">
-          A curated collection of thoughts,<br /> work, and design thinking.
-        </p>
       </div>
 
       {/* Projects — vertical polaroid style (like desktop project page) */}
@@ -2880,85 +2700,34 @@ const MobileLayout = ({
         })()}
       </div>
 
-      {/* Reviews — mobile stacked cards */}
+      {/* Reviews — mobile post-it stack */}
       <div className="px-5 pt-2 pb-10">
         <div className="flex items-center gap-3 mb-6">
           <p className="font-mono text-[9px] uppercase tracking-widest text-ink/35">Reviews</p>
           <div className="flex-1 h-px bg-black/8" />
         </div>
-        <div className="relative cursor-pointer" onClick={() => { playSound('soft'); setReviewIndex(i => (i + 1) % reviews.length); }} style={{ width: '100%', height: '240px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {[0, 1, 2].map((offset) => {
-              const idx = (reviewIndex + offset) % reviews.length;
-              const isTop = offset === 0;
-              return (
-                <motion.div
-                  key={`card-${idx}`}
-                  animate={{
-                    y: isTop ? 0 : offset === 1 ? 12 : 24,
-                    x: isTop ? 0 : offset === 1 ? -16 : 16,
-                    rotate: isTop ? 0 : offset === 1 ? -4 : 4,
-                    scale: isTop ? 1 : offset === 1 ? 0.94 : 0.88,
-                    zIndex: 2 - offset,
-                  }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-                  className="absolute w-full bg-white border border-black/7 shadow-[0_8px_20px_rgba(0,0,0,0.09)] p-4 select-none"
-                  style={{ pointerEvents: isTop ? 'auto' : 'none' }}
-                >
-                  {/* Washi tape */}
-                  <div
-                    className="absolute -top-2 left-4 w-16 h-4 rounded-[2px] shadow-sm z-10"
-                    style={{
-                      ...REVIEW_TAPE_STYLE,
-                      transform: `rotate(${isTop ? '0deg' : reviews[idx].tapeRotate})`,
-                      opacity: 0.88,
-                    }}
-                  />
-
-                  <span className="pointer-events-none font-mono text-[6.5px] uppercase tracking-[0.22em] text-ink/28">REVIEW</span>
-                  <p
-                    className="pointer-events-none font-satoshi italic text-[11px] text-ink/70 leading-[1.6] my-3"
-                    style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}
-                  >
-                    "{reviews[idx].quote}"
-                  </p>
-                  <div className="pointer-events-none h-px bg-black/8 mb-3" />
-
-                  <div className="pointer-events-none flex items-center gap-2.5">
-                    <div
-                      className="bg-white p-[3px] pb-2 shadow-[0_2px_6px_rgba(0,0,0,0.12)] border border-black/6 shrink-0"
-                      style={{ transform: `rotate(${reviews[idx].photoRotate})` }}
-                    >
-                      <img src={reviews[idx].photoSrc} alt={reviews[idx].author} className="w-8 h-8 object-cover" draggable={false} referrerPolicy="no-referrer" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-satoshi text-[11px] font-bold text-plum leading-tight">{reviews[idx].author}</p>
-                      <p className="font-satoshi text-[8.5px] text-ink/45 leading-tight">{reviews[idx].role}</p>
-                    </div>
-                  </div>
-
-                  {isTop && (
-                    <button
-                      className="pointer-events-auto font-mono text-[6.5px] uppercase tracking-[0.14em] text-plum/45 hover:text-plum/70 transition-all duration-200 text-left mt-3"
-                      onClick={(e) => { e.stopPropagation(); onOpenReviews?.(idx); }}
-                    >
-                      read full →
-                    </button>
-                  )}
-                </motion.div>
-              );
-            })}
-        </div>
-
-        {/* Pagination dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-6">
-          {reviews.map((_, i) => (
-            <div
-              key={i}
-              className={`rounded-full transition-all duration-300 ${
-                i === reviewIndex ? 'w-3 h-1.5 bg-plum/50' : 'w-1.5 h-1.5 bg-ink/18'
-              }`}
-            />
-          ))}
+        <div className="relative mx-auto" style={{ width: 280, height: 280 }}>
+          {reviews.map((review, i) => {
+            const offsets = [
+              { x: -20, y: 0, rotate: -5 },
+              { x: 10, y: 24, rotate: 3 },
+              { x: -6, y: 52, rotate: -2 },
+            ];
+            return (
+              <motion.button
+                key={review.author}
+                initial={{ opacity: 0, y: offsets[i].y + 16, x: offsets[i].x, rotate: offsets[i].rotate - 3 }}
+                animate={{ opacity: 1, y: offsets[i].y, x: offsets[i].x, rotate: offsets[i].rotate }}
+                transition={{ delay: 0.2 + i * 0.12, type: 'spring', stiffness: 120, damping: 18 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => { playSound('note'); onOpenReviews?.(i); }}
+                className="absolute left-1/2 -translate-x-1/2 w-[240px] h-[180px] text-left shadow-[0_8px_22px_rgba(0,0,0,0.14)]"
+                style={{ backgroundColor: STICKY_COLORS[i % STICKY_COLORS.length], zIndex: 10 + i }}
+              >
+                <StickyReviewBody review={review} compact />
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
@@ -2994,7 +2763,8 @@ const MobileLayout = ({
         </div>
       </div>
 
-      </motion.div>{/* end content wrapper */}
+      </motion.div>
+      )}{/* end content wrapper */}
     </div>
   );
 };
@@ -3002,14 +2772,74 @@ const MobileLayout = ({
 export default function App() {
   const [cursorText, setCursorText] = useState("");
   const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
-  const [showPaths, setShowPaths] = useState(false);
+  const [phase, setPhase] = useState<'butterflies' | 'title' | 'content' | 'full'>('butterflies');
+  const showPaths = phase === 'full';
+  const showTitle = phase !== 'butterflies';
+  const showContent = phase === 'content' || phase === 'full';
   const [vw, setVw] = useState(() => window.innerWidth);
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const [showProjectsOverview, setShowProjectsOverview] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [reviewsModalIndex, setReviewsModalIndex] = useState(0);
+  const [titleHovered, setTitleHovered] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const titleOverlayRef = useRef<HTMLDivElement>(null);
+
+  const titleAnimRef = useRef<number | null>(null);
+  const titleRadiusRef = useRef(0);
+
+  const getEntryPoint = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      maxR: Math.hypot(rect.width, rect.height) + 140,
+    };
+  };
+
+  const animateTitleRadius = (to: number, duration: number) => {
+    const el = titleOverlayRef.current;
+    if (!el) return;
+    if (titleAnimRef.current !== null) cancelAnimationFrame(titleAnimRef.current);
+    const from = titleRadiusRef.current;
+    const start = performance.now();
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const r = from + (to - from) * easeOutCubic(t);
+      titleRadiusRef.current = r;
+      el.style.setProperty('--radius', `${r}px`);
+      if (t < 1) {
+        titleAnimRef.current = requestAnimationFrame(step);
+      } else {
+        titleAnimRef.current = null;
+      }
+    };
+    titleAnimRef.current = requestAnimationFrame(step);
+  };
+
+  const onTitleEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = titleOverlayRef.current;
+    if (el) {
+      const { x, y, maxR } = getEntryPoint(e);
+      el.style.setProperty('--cx', `${x}px`);
+      el.style.setProperty('--cy', `${y}px`);
+      animateTitleRadius(maxR, 720);
+    }
+    setTitleHovered(true);
+  };
+
+  const onTitleLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = titleOverlayRef.current;
+    if (el) {
+      const { x, y } = getEntryPoint(e);
+      el.style.setProperty('--cx', `${x}px`);
+      el.style.setProperty('--cy', `${y}px`);
+      animateTitleRadius(0, 500);
+    }
+    setTitleHovered(false);
+  };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -3025,13 +2855,27 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  useEffect(() => {
+    const id = 'caveat-font';
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id; link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap';
+    document.head.appendChild(link);
+  }, []);
+
   const isMobile = vw < 640;
 
-  // Mobile: wait for 3.4 s intro animation. Desktop: wait for 8.5 s welcome animation.
+  // Staged loading: butterflies first, then header/title, then content, then scribble arrows + magic butterfly.
   useEffect(() => {
-    const delay = isMobile ? 3400 : 8500;
-    const timer = setTimeout(() => setShowPaths(true), delay);
-    return () => clearTimeout(timer);
+    setPhase('butterflies');
+    const toTitle = isMobile ? 1500 : 3500;
+    const toContent = isMobile ? 2200 : 4800;
+    const toFull = isMobile ? 3400 : 8500;
+    const t1 = setTimeout(() => setPhase('title'), toTitle);
+    const t2 = setTimeout(() => setPhase('content'), toContent);
+    const t3 = setTimeout(() => setPhase('full'), toFull);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [isMobile]);
 
   return (
@@ -3041,6 +2885,8 @@ export default function App() {
           onOpenAbout={() => setShowAbout(true)}
           onSelectProject={(key) => setActiveProject(key)}
           onOpenReviews={(idx) => { setReviewsModalIndex(idx); setShowReviewsModal(true); }}
+          showTitle={showTitle}
+          showContent={showContent}
         />
       ) : (
       <motion.div
@@ -3104,36 +2950,70 @@ export default function App() {
             <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
 
             {/* Drag to explore tab */}
-            <motion.div 
+            {showContent && (
+            <motion.div
               initial={{ y: -50 }}
               animate={{ y: 0 }}
-              transition={{ delay: 7.0, type: "spring" }}
+              transition={{ delay: 0.5, type: "spring" }}
               className="absolute top-0 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-sm px-6 py-2 rounded-b-xl z-30"
             >
               <p className="font-mono text-xs text-ink/60 uppercase tracking-widest select-none">Click on cards to explore</p>
             </motion.div>
+            )}
 
 
 
             {/* Fixed Title */}
+            {showTitle && (
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.5, delay: 4.0, ease: "easeOut" }}
+              transition={{ duration: 1.0, ease: "easeOut" }}
               className="absolute top-[27%] sm:top-[26%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 text-center"
             >
-              <h1 className="font-gelica text-[3.1rem] sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95]">
-                <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Super</span>
-                <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Product</span>
-                <span className="text-plum italic font-black block" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.12), 0px 6px 24px rgba(84,19,136,0.10)' }}>Designer.</span>
-              </h1>
+              <SparklesText
+                text=""
+                sparklesCount={titleHovered ? 12 : 0}
+                className="pointer-events-auto"
+                onMouseEnter={onTitleEnter}
+                onMouseLeave={onTitleLeave}
+              >
+                <h1 className="font-gelica text-[3.1rem] sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95]">
+                  <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Super</span>
+                  <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Product</span>
+                  <span className="text-plum italic font-black block" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.12), 0px 6px 24px rgba(84,19,136,0.10)' }}>Designer.</span>
+                </h1>
+                <div
+                  ref={titleOverlayRef}
+                  aria-hidden="true"
+                  className="font-gelica text-[3.1rem] sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.95] absolute inset-0 pointer-events-none"
+                  style={{
+                    bottom: '-0.35em',
+                    ['--cx' as any]: '50%',
+                    ['--cy' as any]: '50%',
+                    ['--radius' as any]: '0px',
+                    WebkitMaskImage:
+                      'radial-gradient(circle at var(--cx) var(--cy), #000 0, #000 calc(var(--radius) - 80px), transparent var(--radius))',
+                    maskImage:
+                      'radial-gradient(circle at var(--cx) var(--cy), #000 0, #000 calc(var(--radius) - 80px), transparent var(--radius))',
+                    WebkitMaskRepeat: 'no-repeat',
+                    maskRepeat: 'no-repeat',
+                  }}
+                >
+                  <span className="font-black block" style={{ color: 'rgba(255, 255, 255, 0.45)' }}>Super</span>
+                  <span className="font-black block" style={{ color: 'rgba(255, 255, 255, 0.45)' }}>Product</span>
+                  <span className="italic font-black block" style={{ color: 'rgba(255, 255, 255, 0.45)' }}>Designer.</span>
+                </div>
+              </SparklesText>
               <p className="font-satoshi text-ink/70 mt-3 sm:mt-6 max-w-sm text-sm sm:text-lg leading-relaxed mx-auto">
                 A curated collection of thoughts,<br className="sm:hidden" /> work, and design thinking.
               </p>
             </motion.div>
+            )}
 
-            {/* Draggable Elements */}
-            <ProjectStack className={isMobile ? "top-[54%] left-[calc(50%-80px)]" : "top-[8%] left-[11%]"} compact={isMobile} setCursorText={setCursorText} delay={5.0} onOpenProjects={() => setShowProjectsOverview(true)} constraintsRef={canvasRef} showAnnotation={!isMobile && showPaths} />
+            {/* Draggable Elements + scrapbook extras — mount together in content phase */}
+            {showContent && (<>
+            <ProjectStack className={isMobile ? "top-[54%] left-[calc(50%-80px)]" : "top-[8%] left-[11%]"} compact={isMobile} setCursorText={setCursorText} delay={0.2} onOpenProjects={() => setShowProjectsOverview(true)} constraintsRef={canvasRef} />
 
             <FlipCard
               className={isMobile ? "top-[2%] left-[calc(50%-76px)]" : "top-[10%] right-[11%]"}
@@ -3141,10 +3021,9 @@ export default function App() {
               zIndex={15}
               compact={isMobile}
               setCursorText={setCursorText}
-              delay={6.1}
+              delay={0.3}
               onOpenAbout={() => setShowAbout(true)}
               constraintsRef={canvasRef}
-              showAnnotation={!isMobile && showPaths}
             />
 
             <ContactEnvelope
@@ -3152,12 +3031,24 @@ export default function App() {
               rotation={5}
               zIndex={40}
               compact={isMobile}
-              delay={6.2}
+              delay={0.4}
               setCursorText={setCursorText}
               constraintsRef={canvasRef}
             />
 
-            <ReviewStack className={isMobile ? "top-[67%] left-[calc(50%-104px)]" : "top-[58%] left-[8%]"} compact={isMobile} setCursorText={setCursorText} delay={4.4} constraintsRef={canvasRef} onOpenReviews={(idx = 0) => { setReviewsModalIndex(idx); setShowReviewsModal(true); }} />
+            <ReviewStack className={isMobile ? "top-[67%] left-[calc(50%-104px)]" : "top-[58%] left-[8%]"} compact={isMobile} setCursorText={setCursorText} delay={0} constraintsRef={canvasRef} onOpenReviews={(idx = 0) => { setReviewsModalIndex(idx); setShowReviewsModal(true); }} />
+
+            {/* Scrapbook Extras */}
+            {/* Ribbon — decorative accent pinned to top-right corner of FlipCard */}
+            <EmojiScrap emoji="🎀" className={isMobile ? "top-[3%] right-[2%]" : "top-[6%] right-[10%]"} rotation={5} zIndex={17} setCursorText={setCursorText} delay={0.5} />
+            {/* Sparkles — accent decorations */}
+            <EmojiScrap emoji="✨" className="top-[40%] left-[32%]" rotation={0} zIndex={16} setCursorText={setCursorText} delay={0.6} size="text-2xl" />
+            {/* Bubbles near bottom sweep */}
+            <EmojiScrap emoji="🫧" className="top-[78%] left-[40%]" rotation={-5} zIndex={16} setCursorText={setCursorText} delay={0.7} size="text-2xl" />
+            </>)}
+
+            {/* Canvas-pinned handwritten labels — do NOT drag with cards */}
+            <ScribbleAnnotations show={!isMobile && showPaths} />
 
             {/* Path Butterflies — floating 🦋 accents, appear after welcome screen */}
             {showPaths && (
@@ -3166,14 +3057,6 @@ export default function App() {
                 <PathButterfly className={isMobile ? "top-[76%] left-[36%]" : "top-[83%] left-[42%]"} driftX={6}  driftY={3}  delay={1.0} size={isMobile ? "text-lg" : "text-2xl"} />
               </>
             )}
-
-            {/* Scrapbook Extras */}
-            {/* Ribbon — decorative accent pinned to top-right corner of FlipCard */}
-            <EmojiScrap emoji="🎀" className={isMobile ? "top-[3%] right-[2%]" : "top-[6%] right-[10%]"} rotation={5} zIndex={17} setCursorText={setCursorText} delay={6.7} />
-            {/* Sparkles — accent decorations */}
-            <EmojiScrap emoji="✨" className="top-[40%] left-[32%]" rotation={0} zIndex={16} setCursorText={setCursorText} delay={6.8} size="text-2xl" />
-            {/* Bubbles near bottom sweep */}
-            <EmojiScrap emoji="🫧" className="top-[78%] left-[40%]" rotation={-5} zIndex={16} setCursorText={setCursorText} delay={7.1} size="text-2xl" />
 
 
           </motion.div>
@@ -3188,10 +3071,15 @@ export default function App() {
       {!isMobile && showPaths && cursorText && !showAbout && !showProjectsOverview && !activeProject && (
         <motion.div
           className="fixed top-0 left-0 pointer-events-none z-[9999]"
+          initial={{ opacity: 0, scale: 0.8, x: mousePos.x + 18, y: mousePos.y + 18 }}
           animate={{ x: mousePos.x + 18, y: mousePos.y + 18, opacity: 1, scale: 1 }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          transition={{ type: "spring", stiffness: 420, damping: 28 }}
+          exit={{ opacity: 0, scale: 0.8, x: mousePos.x + 18, y: mousePos.y + 18 }}
+          transition={{
+            x: { type: "spring", stiffness: 420, damping: 28 },
+            y: { type: "spring", stiffness: 420, damping: 28 },
+            opacity: { duration: 0.18, ease: "easeOut" },
+            scale: { type: "spring", stiffness: 420, damping: 28 },
+          }}
         >
           <div className="bg-sky text-white font-satoshi font-semibold text-[11px] tracking-wide px-3.5 py-1.5 rounded-full whitespace-nowrap shadow-[0_4px_16px_rgba(14,165,233,0.35)] mb-1">
             {cursorText}

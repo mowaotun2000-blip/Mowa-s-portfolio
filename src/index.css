@@ -37,3 +37,7 @@ body {
 .torn-edge {
   clip-path: polygon(2% 1%, 98% 3%, 100% 98%, 1% 99%);
 }
+
+.motion-hidden-until-ready {
+  opacity: 0;
+}
