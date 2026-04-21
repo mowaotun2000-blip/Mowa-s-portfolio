@@ -135,12 +135,17 @@ const FlipCard = ({ className, rotation, zIndex, delay, setCursorText, compact =
       initial={{ opacity: 0, y: 30, scale: 0.95, rotate: rotation - 5 }}
       animate={{ opacity: 1, y: 0, scale: 1, rotate: rotation }}
       whileHover={{ scale: 1.04, y: -4, transition: { duration: 0.25, ease: 'easeOut' } }}
+      whileDrag={{ scale: 1.03, zIndex: 100 }}
       transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
-      className={`absolute cursor-pointer ${className}`}
+      drag
+      dragConstraints={constraintsRef}
+      dragElastic={0.15}
+      dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
+      className={`absolute cursor-grab active:cursor-grabbing ${className}`}
       style={{ zIndex }}
       onMouseEnter={() => { setCursorText('About me'); playSound('soft'); }}
       onMouseLeave={() => setCursorText('')}
-      onClick={() => { playSound('flip'); onOpenAbout?.(); }}
+      onTap={() => { playSound('flip'); onOpenAbout?.(); }}
     >
       {/* Paper clip pinned at top */}
       <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
@@ -497,11 +502,16 @@ const ReviewStack = ({ delay, setCursorText, className, compact = false, constra
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
-      className={`absolute cursor-pointer ${className}`}
+      className={`absolute cursor-grab active:cursor-grabbing ${className}`}
       style={{ zIndex: 12, width: compact ? 224 : 250, height: compact ? 212 : 230 }}
       onMouseEnter={() => { setCursorText('Read reviews'); setHovered(true); playSound('soft'); }}
       onMouseLeave={() => { setCursorText(''); setHovered(false); }}
-      onClick={() => { cycleReviews(); }}
+      whileDrag={{ scale: 1.03, zIndex: 100 }}
+      drag
+      dragConstraints={constraintsRef}
+      dragElastic={0.15}
+      dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
+      onTap={() => { cycleReviews(); }}
     >
       {order.slice(0, 2).map((reviewIndex, slot) => {
         const review = reviews[reviewIndex];
@@ -805,11 +815,16 @@ const ProjectStack = ({ delay, setCursorText, className, compact = false, onOpen
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
-      className={`absolute cursor-pointer ${className}`}
+      className={`absolute cursor-grab active:cursor-grabbing ${className}`}
       style={{ zIndex: 13 }}
       onMouseEnter={() => { setCursorText('View projects'); setIsHovered(true); playSound('soft'); }}
       onMouseLeave={() => { setCursorText(''); setIsHovered(false); }}
       whileHover={{ scale: 1.05, zIndex: 50, transition: { duration: 0.2 } }}
+      whileDrag={{ scale: 1.03, zIndex: 100 }}
+      drag
+      dragConstraints={constraintsRef}
+      dragElastic={0.15}
+      dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
       onTap={onOpenProjects}
     >
       {/* Bottom Folder (Light Brown) */}
@@ -898,7 +913,12 @@ const ContactEnvelope = ({ delay, setCursorText, className, rotation = 0, zIndex
     animate={{ opacity: 1, scale: 1, rotate: rotation }}
     transition={{ delay, duration: 1.2, type: "spring", stiffness: 100, damping: 20 }}
     whileHover={{ y: -6, scale: 1.04, zIndex: 50, transition: { duration: 0.25, ease: 'easeOut' } }}
-    className={`absolute cursor-pointer ${className}`}
+    whileDrag={{ scale: 1.03, zIndex: 100 }}
+    drag
+    dragConstraints={constraintsRef}
+    dragElastic={0.15}
+    dragTransition={{ bounceStiffness: 300, bounceDamping: 25 }}
+    className={`absolute cursor-grab active:cursor-grabbing ${className}`}
     style={{ zIndex }}
     onMouseEnter={() => { setCursorText('Contact'); playSound('envelope'); }}
     onMouseLeave={() => setCursorText('')}
@@ -3025,7 +3045,7 @@ export default function App() {
       ) : (
       <motion.div
         ref={canvasRef}
-        className="desktop-custom-cursor w-full h-screen relative overflow-hidden bg-[#FFFEFD] selection:bg-lilac selection:text-plum"
+        className="desktop-custom-cursor w-full h-screen relative bg-[#FFFEFD] selection:bg-lilac selection:text-plum"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect x='0' y='0' width='100' height='100' fill='%23FFFEFD' fill-opacity='1'/%3E%3Crect x='100' y='100' width='100' height='100' fill='%23FFFEFD' fill-opacity='1'/%3E%3Crect x='100' y='0' width='100' height='100' fill='%23F9FBFD' fill-opacity='1'/%3E%3Crect x='0' y='100' width='100' height='100' fill='%23F9FBFD' fill-opacity='1'/%3E%3C/svg%3E")`,
           backgroundSize: '200px 200px'
