@@ -7,6 +7,7 @@ import figmaLogo from '../Image/fIGMA.png';
 import { SparklesText } from './components/ui/sparkles-text';
 
 // ─── Card sound effects (Web Audio API) ───────────────────────────────────────
+// Mobile layout: Click-to-explore bar fixed, About card repositioned before hero text
 const playSound = (type: 'folder' | 'flip' | 'review' | 'envelope' | 'note' | 'soft') => {
   try {
     const AC = window.AudioContext || (window as any).webkitAudioContext;
