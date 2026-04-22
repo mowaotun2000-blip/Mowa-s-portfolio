@@ -2562,23 +2562,81 @@ const MobileLayout = ({
       <motion.div className="fixed top-0 left-0 drop-shadow-md z-[790] pointer-events-none" initial={{ opacity: 0, x: '30vw', y: '70vh', rotate: 15, scale: 0.6 }} animate={{ opacity: [0, 0.8, 0.8, 0], x: ['30vw', '20vw', '40vw', '10vw'], y: ['70vh', '50vh', '30vh', '10vh'], rotate: [15, -10, 5, 25], scale: [0.6, 1, 0.9, 0.7] }} transition={{ duration: 2.2, times: [0, 0.2, 0.6, 1], ease: 'easeInOut', delay: 0.8 }}><img src="/about/butterfly.png" alt="" className="w-14 h-14 object-contain" draggable={false} /></motion.div>
       <motion.div className="fixed top-0 left-0 drop-shadow-md z-[790] pointer-events-none" initial={{ opacity: 0, x: '70vw', y: '60vh', rotate: -10, scale: 0.5 }} animate={{ opacity: [0, 0.7, 0.7, 0], x: ['70vw', '60vw', '75vw', '90vw'], y: ['60vh', '40vh', '20vh', '0vh'], rotate: [-10, 15, -5, 20], scale: [0.5, 0.8, 0.7, 0.6] }} transition={{ duration: 2.0, times: [0, 0.3, 0.7, 1], ease: 'easeInOut', delay: 1.0 }}><img src="/about/butterfly.png" alt="" className="w-12 h-12 object-contain" draggable={false} /></motion.div>
 
-      {/* Header/title — phase 2, appears after butterflies */}
+      {/* Phase 2: click label + about card + hero text */}
       {showTitle && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-center px-6 pt-20 pb-6"
-        >
-          <h1 className="font-gelica text-[3.7rem] tracking-tight leading-[0.95]">
-            <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Super</span>
-            <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Product</span>
-            <span className="text-plum italic font-black block" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.12), 0px 6px 24px rgba(84,19,136,0.10)' }}>Designer.</span>
-          </h1>
-          <p className="font-satoshi text-ink/70 mt-4 text-sm leading-relaxed max-w-[230px] mx-auto">
-            A curated collection of thoughts,<br /> work, and design thinking.
-          </p>
-        </motion.div>
+        <>
+          {/* Click on cards — fixed top bar */}
+          <div className="fixed top-0 left-0 right-0 flex justify-center z-50 pt-0 pb-1">
+            <div className="bg-white border border-gray-200 shadow-sm px-6 py-2 rounded-b-xl">
+              <p className="font-mono text-[9px] text-ink/60 uppercase tracking-widest select-none">Click on cards to explore</p>
+            </div>
+          </div>
+
+          {/* About me card — before hero text */}
+          <div className="relative flex justify-center pt-12 pb-2 px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.8 }}
+              className="absolute pointer-events-none select-none z-10"
+              style={{ transform: 'rotate(-5deg)', bottom: '-22px', right: '18px' }}
+            >
+              <svg width="52" height="80" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 3 }}>
+                <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" {...sw} />
+                <path d="M 2 17 L 8 8 L 17 13" {...tip} />
+              </svg>
+              <span style={{ fontFamily: "'Caveat', cursive", fontSize: '15px', color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap', display: 'block' }}>Hi, this is me ✨</span>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.7, type: 'spring', stiffness: 100, damping: 20 }}
+              className="relative cursor-pointer"
+              style={{ rotate: -2 } as React.CSSProperties}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { playSound('flip'); onOpenAbout(); }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.4, rotate: -20 }}
+                animate={{ opacity: 1, scale: 1, rotate: 12 }}
+                transition={{ delay: 0.5, duration: 0.6, type: 'spring' }}
+                className="absolute -right-4 -top-3 text-2xl pointer-events-none select-none z-20"
+              >🎀</motion.div>
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+                <PaperClip />
+              </div>
+              <div className="bg-[#fefefe] border border-[#e8e0d5] shadow-md rounded-sm flex flex-col items-center p-2.5" style={{ width: '172px' }}>
+                <div className="flex items-center justify-center mb-1">
+                  <div className="bg-white p-1 pb-3 shadow-md border border-black/5 rotate-[2deg]">
+                    <img src="/mowa.jpeg" alt="Mowa Otun" className="w-[100px] h-[100px] object-cover object-center" draggable={false} referrerPolicy="no-referrer" />
+                  </div>
+                </div>
+                <div className="w-full mt-2">
+                  <h2 className="font-gelica text-sm text-plum leading-tight">Mowa Otun</h2>
+                  <p className="font-mono text-[8px] uppercase tracking-widest text-ink/40 mt-1 whitespace-nowrap">Product & UX Designer</p>
+                  <span className="font-satoshi text-[8px] italic text-ink/25 mt-0.5 block">click to open</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Hero text — below about card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="text-center px-6 pt-8 pb-6"
+          >
+            <h1 className="font-gelica text-[3.7rem] tracking-tight leading-[0.95]">
+              <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Super</span>
+              <span className="text-sky font-black block" style={{ textShadow: '3px 3px 0px rgba(14,165,233,0.12), 0px 6px 24px rgba(14,165,233,0.10)' }}>Product</span>
+              <span className="text-plum italic font-black block" style={{ textShadow: '3px 3px 0px rgba(84,19,136,0.12), 0px 6px 24px rgba(84,19,136,0.10)' }}>Designer.</span>
+            </h1>
+            <p className="font-satoshi text-ink/70 mt-4 text-sm leading-relaxed max-w-[230px] mx-auto">
+              A curated collection of thoughts,<br /> work, and design thinking.
+            </p>
+          </motion.div>
+        </>
       )}
 
       {/* Main content — phase 3, appears after title */}
@@ -2587,64 +2645,6 @@ const MobileLayout = ({
 
       {/* Floating butterfly — fixed, drifts on left side */}
       <PathButterfly className="fixed bottom-[20%] left-[6%]" driftX={6} driftY={3} delay={0.9} size="text-lg" />
-
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm py-2 text-center">
-        <p className="font-mono text-[9px] text-ink/50 uppercase tracking-widest select-none">Click on cards to explore</p>
-      </div>
-
-      {/* About me card section */}
-      <div className="relative flex justify-center pt-6 pb-2 px-6">
-        {/* "Hi, this is me" handwriting */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.8 }}
-          className="absolute bottom-4 right-3 pointer-events-none select-none z-10 motion-hidden-until-ready"
-          style={{ transform: 'rotate(-5deg)' }}
-        >
-          <svg width="52" height="80" viewBox="0 0 78 122" fill="none" style={{ display: 'block', marginBottom: 3 }}>
-            <path d="M 58 120 C 66 102, 62 88, 56 76 C 50 64, 38 67, 42 78 C 46 89, 60 87, 55 74 C 50 60, 36 46, 22 30 C 18 24, 12 16, 8 8" {...sw} />
-            <path d="M 2 17 L 8 8 L 17 13" {...tip} />
-          </svg>
-          <span style={{ fontFamily: "'Caveat', cursive", fontSize: '15px', color: '#111', lineHeight: 1.2, whiteSpace: 'nowrap', display: 'block' }}>Hi, this is me ✨</span>
-        </motion.div>
-
-        {/* Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.7, type: 'spring', stiffness: 100, damping: 20 }}
-          className="relative cursor-pointer"
-          style={{ rotate: -2 } as React.CSSProperties}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => { playSound('flip'); onOpenAbout(); }}
-        >
-          {/* 🎀 Ribbon — attached to top-right of card */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.4, rotate: -20 }}
-            animate={{ opacity: 1, scale: 1, rotate: 12 }}
-            transition={{ delay: 0.5, duration: 0.6, type: 'spring' }}
-            className="absolute -right-4 -top-3 text-2xl pointer-events-none select-none z-20"
-          >🎀</motion.div>
-
-          <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-            <PaperClip />
-          </div>
-          <div className="bg-[#fefefe] border border-[#e8e0d5] shadow-md rounded-sm flex flex-col items-center p-2.5" style={{ width: '172px' }}>
-            <div className="flex items-center justify-center mb-1">
-              <div className="bg-white p-1 pb-3 shadow-md border border-black/5 rotate-[2deg]">
-                <img src="/mowa.jpeg" alt="Mowa Otun" className="w-[100px] h-[100px] object-cover object-center" draggable={false} referrerPolicy="no-referrer" />
-              </div>
-            </div>
-            <div className="w-full mt-2">
-              <h2 className="font-gelica text-sm text-plum leading-tight">Mowa Otun</h2>
-              <p className="font-mono text-[8px] uppercase tracking-widest text-ink/40 mt-1 whitespace-nowrap">Product & UX Designer</p>
-              <span className="font-satoshi text-[8px] italic text-ink/25 mt-0.5 block">click to open</span>
-            </div>
-          </div>
-        </motion.div>
-      </div>
 
       {/* Projects — vertical polaroid style (like desktop project page) */}
       <div className="px-5 pt-2 pb-10">
